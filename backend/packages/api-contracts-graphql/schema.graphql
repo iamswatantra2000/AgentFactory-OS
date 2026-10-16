@@ -1,0 +1,14 @@
+type Query {
+  systemStatus: SystemStatus!
+}
+
+type SystemStatus {
+  gateway: ServiceStatus!
+  projectService: ServiceStatus!
+}
+
+type ServiceStatus {
+  name: String!
+  status: String!
+  timestamp: String!
+}

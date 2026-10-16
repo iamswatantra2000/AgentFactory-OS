@@ -1,0 +1,29 @@
+:root {
+  color-scheme: light;
+  --af-background: #f5f5f0;
+  --af-surface: #ffffff;
+  --af-surface-muted: #ecece5;
+  --af-text: #171a17;
+  --af-text-muted: #5c625c;
+  --af-border: #cdd1ca;
+  --af-action: #225c45;
+  --af-action-hover: #194834;
+  --af-focus: #1769aa;
+  --af-success: #276b42;
+  --af-warning: #8a5a00;
+  --af-error: #a52a2a;
+  --af-radius-sm: 0.5rem;
+  --af-radius-md: 0.875rem;
+  --af-radius-lg: 1.25rem;
+  --af-shadow-sm: 0 1px 2px rgb(20 28 22 / 8%);
+  --af-shadow-md: 0 12px 32px rgb(20 28 22 / 10%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+:focus-visible {
+  outline: 3px solid var(--af-focus);
+  outline-offset: 3px;
+}

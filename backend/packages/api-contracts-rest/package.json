@@ -1,0 +1,8 @@
+{
+  "name": "@agentfactory/api-contracts-rest",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    "./openapi.yaml": "./openapi.yaml"
+  }
+}

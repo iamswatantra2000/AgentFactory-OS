@@ -1,0 +1,195 @@
+:root {
+  /* Brand and semantic colors */
+  --af-forest-900: #133d28;
+  --af-forest-800: #184d32;
+  --af-forest-700: #23623f;
+  --af-sage-200: #d6e5d3;
+  --af-sage-100: #e6eee3;
+  --af-canvas: #f7f4ec;
+  --af-surface: #fffdf8;
+  --af-paper: #f1ebdf;
+  --af-ink: #121612;
+  --af-slate: #5d635e;
+  --af-border: #d8d2c5;
+  --af-border-hover: #b9b2a5;
+  --af-clay: #a63e27;
+  --af-clay-100: #f8e3da;
+  --af-amber: #9b651f;
+  --af-amber-100: #f4e8d2;
+  --af-info: #2d6f9f;
+  --af-info-100: #e4eff6;
+  --af-white: #ffffff;
+
+  /* Typography */
+  --af-font-display: var(--font-dm-serif-display), Georgia, 'Times New Roman', serif;
+  --af-font-interface: var(--font-inter), Inter, ui-sans-serif, system-ui, sans-serif;
+  --af-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --af-display-xl-size: 4.5rem;
+  --af-display-xl-line: 1;
+  --af-display-xl-tracking: -0.03em;
+  --af-h1-size: 3.5rem;
+  --af-h1-line: 3.75rem;
+  --af-h1-tracking: -0.025em;
+  --af-h2-size: 2.625rem;
+  --af-h2-line: 3rem;
+  --af-h2-tracking: -0.02em;
+  --af-h3-size: 1.75rem;
+  --af-h3-line: 2.125rem;
+  --af-h3-tracking: -0.01em;
+  --af-h4-size: 1.25rem;
+  --af-h4-line: 1.625rem;
+  --af-body-l-size: 1.125rem;
+  --af-body-l-line: 1.75rem;
+  --af-body-m-size: 1rem;
+  --af-body-m-line: 1.5rem;
+  --af-body-s-size: 0.875rem;
+  --af-body-s-line: 1.25rem;
+  --af-caption-size: 0.75rem;
+  --af-caption-line: 1.125rem;
+  --af-eyebrow-size: 0.75rem;
+  --af-eyebrow-line: 1rem;
+  --af-eyebrow-tracking: 0.18em;
+
+  /* Spacing: 4px base unit */
+  --af-space-1: 0.25rem;
+  --af-space-2: 0.5rem;
+  --af-space-3: 0.75rem;
+  --af-space-4: 1rem;
+  --af-space-5: 1.25rem;
+  --af-space-6: 1.5rem;
+  --af-space-8: 2rem;
+  --af-space-10: 2.5rem;
+  --af-space-12: 3rem;
+  --af-space-16: 4rem;
+  --af-space-20: 5rem;
+  --af-space-24: 6rem;
+  --af-space-30: 7.5rem;
+
+  /* Shape and depth */
+  --af-radius-input: 0.25rem;
+  --af-radius-button: 0.375rem;
+  --af-radius-card: 0.5rem;
+  --af-radius-overlay: 0.75rem;
+  --af-radius-pill: 999px;
+  --af-shadow-raised: 0 12px 32px rgb(18 22 18 / 10%);
+  --af-shadow-overlay: 0 24px 64px rgb(18 22 18 / 16%);
+  --af-focus-ring: 0 0 0 3px rgb(230 238 227 / 95%);
+
+  /* Motion */
+  --af-duration-control: 160ms;
+  --af-duration-overlay: 240ms;
+  --af-ease-out: ease-out;
+
+  /* Layout */
+  --af-content-max: 75rem;
+  --af-public-header: 4.5rem;
+  --af-app-sidebar: 15rem;
+  --af-grid-columns: 12;
+  --af-page-gutter: 2rem;
+  --af-component-gap: 1.5rem;
+}
+
+.af-display-xl,
+.af-heading-1,
+.af-heading-2,
+.af-heading-3,
+.af-heading-4 {
+  margin: 0;
+  color: var(--af-ink);
+  font-family: var(--af-font-display);
+  font-weight: 400;
+  text-wrap: balance;
+}
+
+.af-display-xl {
+  font-size: var(--af-display-xl-size);
+  line-height: var(--af-display-xl-line);
+  letter-spacing: var(--af-display-xl-tracking);
+}
+
+.af-heading-1 {
+  font-size: var(--af-h1-size);
+  line-height: var(--af-h1-line);
+  letter-spacing: var(--af-h1-tracking);
+}
+
+.af-heading-2 {
+  font-size: var(--af-h2-size);
+  line-height: var(--af-h2-line);
+  letter-spacing: var(--af-h2-tracking);
+}
+
+.af-heading-3 {
+  font-size: var(--af-h3-size);
+  line-height: var(--af-h3-line);
+  letter-spacing: var(--af-h3-tracking);
+}
+
+.af-heading-4 {
+  font-size: var(--af-h4-size);
+  line-height: var(--af-h4-line);
+}
+
+.af-body-large {
+  font-size: var(--af-body-l-size);
+  line-height: var(--af-body-l-line);
+}
+
+.af-body-medium {
+  font-size: var(--af-body-m-size);
+  line-height: var(--af-body-m-line);
+}
+
+.af-body-small,
+.af-ui-label {
+  font-size: var(--af-body-s-size);
+  line-height: var(--af-body-s-line);
+}
+
+.af-ui-label {
+  font-weight: 500;
+}
+
+.af-eyebrow {
+  margin: 0;
+  font-size: var(--af-eyebrow-size);
+  font-weight: 600;
+  line-height: var(--af-eyebrow-line);
+  letter-spacing: var(--af-eyebrow-tracking);
+  text-transform: uppercase;
+}
+
+.af-caption {
+  font-size: var(--af-caption-size);
+  line-height: var(--af-caption-line);
+}
+
+@media (max-width: 74.9375rem) {
+  :root {
+    --af-grid-columns: 8;
+    --af-page-gutter: 1.5rem;
+    --af-component-gap: 1.25rem;
+  }
+}
+
+@media (max-width: 47.9375rem) {
+  :root {
+    --af-display-xl-size: 3rem;
+    --af-display-xl-line: 3.125rem;
+    --af-h1-size: 2.75rem;
+    --af-h1-line: 3rem;
+    --af-h2-size: 2.25rem;
+    --af-h2-line: 2.5rem;
+    --af-grid-columns: 4;
+    --af-page-gutter: 1.25rem;
+    --af-component-gap: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --af-duration-control: 1ms;
+    --af-duration-overlay: 1ms;
+  }
+}

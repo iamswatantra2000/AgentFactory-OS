@@ -1,0 +1,4 @@
+{
+  "extends": "@agentfactory/typescript-config/service.json",
+  "include": ["src/**/*.ts"]
+}
