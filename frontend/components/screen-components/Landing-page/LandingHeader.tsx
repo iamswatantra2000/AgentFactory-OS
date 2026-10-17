@@ -10,7 +10,7 @@ const links = [
   ['Governance', '#governance'],
   ['Pricing', '#pricing'],
 ] as const;
-export function LandingHeader() {
+export function LandingHeader({ authenticated = false }: { authenticated?: boolean }) {
   const [open, setOpen] = useState(false);
   const toggle = useRef<HTMLButtonElement>(null);
   const openedByHover = useRef(false);
@@ -62,8 +62,8 @@ export function LandingHeader() {
           ))}
         </nav>
         <div className={styles.headerActions}>
-          <AccessAction signIn />
-          <AccessAction />
+          {!authenticated && <AccessAction signIn />}
+          <AccessAction authenticated={authenticated} />
         </div>
         <button
           ref={toggle}
@@ -99,8 +99,8 @@ export function LandingHeader() {
           </a>
         ))}
         <div>
-          <AccessAction signIn />
-          <AccessAction arrow />
+          {!authenticated && <AccessAction signIn />}
+          <AccessAction arrow authenticated={authenticated} />
         </div>
       </nav>
     </header>

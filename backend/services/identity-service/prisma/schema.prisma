@@ -11,8 +11,58 @@ model User {
   id          String       @id @default(uuid()) @db.Uuid
   email       String       @unique
   name        String?
+  passwordHash String?
+  emailVerifiedAt DateTime?
   createdAt   DateTime     @default(now())
   memberships Membership[]
+  sessions    Session[]
+  authTokens  AuthToken[]
+  identities  ExternalIdentity[]
+}
+
+model AuthToken {
+  tokenHash String @id
+  userId String @db.Uuid
+  purpose String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose])
+  @@index([expiresAt])
+}
+
+model ExternalIdentity {
+  provider String
+  subject String
+  userId String @db.Uuid
+  createdAt DateTime @default(now())
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, subject])
+  @@unique([userId, provider])
+}
+
+model OAuthAttempt {
+  stateHash String @id
+  provider String
+  codeVerifier String
+  nonce String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+}
+
+model Session {
+  tokenHash String   @id
+  userId    String   @db.Uuid
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model Workspace {

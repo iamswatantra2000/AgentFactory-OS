@@ -450,7 +450,25 @@
 .workflow {
   position: relative;
   isolation: isolate;
-  padding-bottom: 180px;
+  padding-bottom: 290px;
+}
+.workflowDancer {
+  position: absolute;
+  right: max(80px, calc((100vw - 1248px) / 2));
+  bottom: 0;
+  width: 135px;
+  pointer-events: none;
+  transition: rotate 240ms ease-out;
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .workflow:hover .workflowDancer {
+    rotate: -5deg;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .workflowDancer {
+    transition: none;
+  }
 }
 .sectionInner {
   max-width: 1440px;
@@ -951,7 +969,11 @@
     line-height: 20px;
   }
   .workflow {
-    padding-bottom: 120px;
+    padding-bottom: 210px;
+  }
+  .workflowDancer {
+    right: 20px;
+    width: 88px;
   }
   .workflowArt {
     width: 850px;

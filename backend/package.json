@@ -15,7 +15,7 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
-    "db:up": "docker compose -f infrastructure/docker/compose.yml up -d postgres",
+    "db:up": "docker compose -f infrastructure/docker/compose.yml up -d postgres mailpit",
     "db:down": "docker compose -f infrastructure/docker/compose.yml down",
     "db:logs": "docker compose -f infrastructure/docker/compose.yml logs -f postgres",
     "db:generate": "turbo run db:generate",

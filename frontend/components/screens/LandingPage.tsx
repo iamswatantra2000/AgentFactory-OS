@@ -14,21 +14,27 @@ import {
   NewsletterSection,
 } from '../screen-components/Landing-page/ConversionSections';
 
-export default function LandingPage() {
+export default function LandingPage({
+  showEntrance = false,
+  authenticated = false,
+}: {
+  showEntrance?: boolean;
+  authenticated?: boolean;
+}) {
   return (
     <LandingMotion className={styles.page}>
-      <LandingEntrance />
+      {showEntrance && <LandingEntrance />}
       <a className={styles.skipLink} href="#main-content">
         Skip to content
       </a>
-      <LandingHeader />
+      <LandingHeader authenticated={authenticated} />
       <main id="main-content" tabIndex={-1}>
-        <LandingHero />
+        <LandingHero authenticated={authenticated} />
         <Principles />
         <PurposeSection />
         <WorkflowSection />
         <GovernanceSection />
-        <PricingSection />
+        <PricingSection authenticated={authenticated} />
         <NewsletterSection />
       </main>
       <CompleteFooter />

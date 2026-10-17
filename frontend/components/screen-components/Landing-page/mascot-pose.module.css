@@ -1,0 +1,39 @@
+.frame {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  width: 100%;
+  pointer-events: none;
+}
+
+.frame img {
+  position: absolute;
+  display: block;
+  max-width: none;
+  object-fit: fill;
+}
+
+.peek {
+  aspect-ratio: 1;
+}
+
+.gridSheet {
+  width: 400%;
+  height: 300%;
+  top: 0;
+  left: -200%;
+}
+
+.strip {
+  aspect-ratio: 3 / 7;
+}
+
+.stripSheet {
+  width: 700%;
+  height: 100%;
+  top: 0;
+}
+
+.dance .stripSheet {
+  left: -600%;
+}

@@ -1,26 +1,27 @@
 import { createServer } from 'node:http';
-import express from 'express';
-import helmet from 'helmet';
-import pinoHttp from 'pino-http';
+import { loadEnvFile } from 'node:process';
 import { z } from 'zod';
 import { createLogger } from '@agentfactory/observability';
+import { createApp } from './app.js';
+import { createIdentityRepository } from './repository.js';
+
+if (process.env.NODE_ENV !== 'production') {
+  try {
+    loadEnvFile(new URL('../../../.env', import.meta.url));
+  } catch {
+    // Explicit environment variables are also supported.
+  }
+}
 
 const config = z
-  .object({ IDENTITY_SERVICE_PORT: z.coerce.number().default(4001) })
+  .object({
+    IDENTITY_SERVICE_PORT: z.coerce.number().int().min(1).max(65535).default(4001),
+    IDENTITY_DATABASE_URL: z.url(),
+  })
   .parse(process.env);
 const logger = createLogger('identity-service');
-const app = express();
-app.disable('x-powered-by');
-app.use(helmet());
-app.use(pinoHttp({ logger }));
-app.get('/health/live', (_req, res) =>
-  res.json({ name: 'identity-service', status: 'ok', timestamp: new Date().toISOString() }),
-);
-app.get('/health/ready', (_req, res) =>
-  res.json({ name: 'identity-service', status: 'ok', timestamp: new Date().toISOString() }),
-);
-app.get('/v1/session/status', (_req, res) => res.json({ authenticated: false }));
-const server = createServer(app);
+const repository = createIdentityRepository(config.IDENTITY_DATABASE_URL);
+const server = createServer(createApp(repository));
 server.listen(config.IDENTITY_SERVICE_PORT, () =>
   logger.info({ port: config.IDENTITY_SERVICE_PORT }, 'Identity service listening'),
 );

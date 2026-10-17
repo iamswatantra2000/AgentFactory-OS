@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { MascotPose } from './MascotPose';
 import {
   UsersIcon,
   FileTextIcon,
@@ -123,6 +124,9 @@ export function WorkflowSection() {
         alt=""
         aria-hidden="true"
       />
+      <div className={styles.workflowDancer} aria-hidden="true">
+        <MascotPose pose="dance" />
+      </div>
     </section>
   );
 }

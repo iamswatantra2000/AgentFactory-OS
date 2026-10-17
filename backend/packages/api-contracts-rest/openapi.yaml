@@ -38,13 +38,145 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                required: [authenticated]
-                properties:
-                  authenticated:
-                    type: boolean
+                $ref: '#/components/schemas/SessionStatus'
+        '503':
+          description: Identity service unavailable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /api/v1/auth/signup:
+    post:
+      operationId: signUp
+      description: Creates an owner account, workspace, and server-side session.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                  maxLength: 120
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 12
+                  maxLength: 128
+      responses:
+        '201':
+          description: Account created. Sets an HttpOnly af_session cookie.
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSuccess'
+        '400':
+          $ref: '#/components/responses/ProblemResponse'
+        '409':
+          $ref: '#/components/responses/ProblemResponse'
+        '503':
+          $ref: '#/components/responses/ProblemResponse'
+  /api/v1/auth/login:
+    post:
+      operationId: logIn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Signed in. Sets an HttpOnly af_session cookie.
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSuccess'
+        '400':
+          $ref: '#/components/responses/ProblemResponse'
+        '401':
+          $ref: '#/components/responses/ProblemResponse'
+        '503':
+          $ref: '#/components/responses/ProblemResponse'
+  /api/v1/auth/logout:
+    post:
+      operationId: logOut
+      security:
+        - sessionCookie: []
+      responses:
+        '204':
+          description: Session revoked and cookie cleared.
+        '503':
+          $ref: '#/components/responses/ProblemResponse'
 components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: af_session
+  responses:
+    ProblemResponse:
+      description: Request failed
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
   schemas:
+    SessionUser:
+      type: object
+      required: [id, email, name, workspaceId]
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: [string, 'null']
+        workspaceId:
+          type: [string, 'null']
+          format: uuid
+    SessionStatus:
+      oneOf:
+        - type: object
+          required: [authenticated]
+          properties:
+            authenticated:
+              const: false
+        - type: object
+          required: [authenticated, user]
+          properties:
+            authenticated:
+              const: true
+            user:
+              $ref: '#/components/schemas/SessionUser'
+    AuthSuccess:
+      type: object
+      required: [user]
+      properties:
+        user:
+          $ref: '#/components/schemas/SessionUser'
     HealthResponse:
       type: object
       required: [status, service, timestamp]
@@ -59,7 +191,7 @@ components:
           format: date-time
     Problem:
       type: object
-      required: [type, title, status, correlationId]
+      required: [type, title, status]
       properties:
         type:
           type: string

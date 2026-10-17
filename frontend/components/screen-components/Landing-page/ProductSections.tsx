@@ -2,6 +2,7 @@ import { TreeStructureIcon, ArrowsLeftRightIcon, ArrowRightIcon } from '@phospho
 import { BrandWordmark } from '@/components/design-system';
 import Image from 'next/image';
 import oliveBranch from '@/public/images/brand/component6.png';
+import { MascotPose } from './MascotPose';
 import styles from './complete.module.css';
 
 export function PurposeSection() {
@@ -23,7 +24,10 @@ export function PurposeSection() {
           See how it comes together <ArrowRightIcon size={18} aria-hidden="true" />
         </a>
       </div>
-      <div className={styles.purposeCards} data-motion-reveal data-motion-group>
+      <div id="mascot" className={styles.purposeCards} data-motion-reveal data-motion-group>
+        <div className={styles.purposePeek} aria-hidden="true">
+          <MascotPose pose="peek" />
+        </div>
         <article>
           <TreeStructureIcon size={28} weight="light" aria-hidden="true" />
           <span>01 / THE ORGANIZATION</span>

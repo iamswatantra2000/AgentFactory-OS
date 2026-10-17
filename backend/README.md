@@ -32,3 +32,23 @@ pnpm dev
 ```bash
 pnpm check
 ```
+
+## Account and landing-page flow
+
+The frontend remains a separate Next.js application. Its browser-facing route handler forwards account actions to the gateway, while the gateway owns the `af_session` cookie and the identity service owns password verification and session records.
+
+| Page or endpoint                       | Purpose                                                                   |
+| -------------------------------------- | ------------------------------------------------------------------------- |
+| `/`                                    | Public landing page; authenticated visitors are redirected to `/welcome`. |
+| `/login`                               | Existing-account sign-in.                                                 |
+| `/signup` (`/register` redirects here) | Creates an account and owner workspace.                                   |
+| `/welcome`                             | Authenticated landing page with dashboard CTAs.                           |
+| `/dashboard`                           | Authenticated workspace preview.                                          |
+| `POST /api/v1/auth/signup`             | Create account and session.                                               |
+| `POST /api/v1/auth/login`              | Verify credentials and create session.                                    |
+| `GET /api/v1/session/status`           | Validate the browser session.                                             |
+| `POST /api/v1/auth/logout`             | Revoke session and clear cookie.                                          |
+
+The frontend calls these endpoints through its same-origin `/api/auth/{signup,login,logout}` route handler. Set `API_GATEWAY_URL` for the frontend and `IDENTITY_SERVICE_URL` for the gateway when the services are not running on their local defaults. Sessions are stored server-side and expire after seven days. The cookie is HttpOnly and SameSite=Lax; it is marked Secure in production.
+
+This is the first account-flow slice, not a complete public-launch identity system. Before exposing signup broadly, add email verification, password recovery, request throttling/abuse controls, and an operational session-management policy.

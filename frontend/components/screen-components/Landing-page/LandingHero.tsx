@@ -2,7 +2,7 @@ import Image from 'next/image';
 import { AccessAction } from './AccessAction';
 import { WorkflowPreview } from './WorkflowPreview';
 import styles from './landing.module.css';
-export function LandingHero() {
+export function LandingHero({ authenticated = false }: { authenticated?: boolean }) {
   return (
     <section id="overview" className={styles.hero} aria-labelledby="landing-title">
       <Image
@@ -28,7 +28,7 @@ export function LandingHero() {
             decide where your team stays in control.
           </p>
           <div className={styles.heroActions}>
-            <AccessAction arrow />
+            <AccessAction arrow authenticated={authenticated} />
             <a className={styles.secondaryAction} href="#workflow">
               Explore the workflow
             </a>

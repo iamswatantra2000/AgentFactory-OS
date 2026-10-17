@@ -13,3 +13,4 @@ test-results/
 frontend/next-env.d.ts
 .DS_Store
 backend/services/*/src/generated/
+backend/.pnpm-store/

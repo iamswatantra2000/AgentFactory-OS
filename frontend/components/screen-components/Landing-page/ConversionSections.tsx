@@ -42,7 +42,7 @@ const plans = [
     note: 'Scope and pricing to be confirmed.',
   },
 ];
-export function PricingSection() {
+export function PricingSection({ authenticated = false }: { authenticated?: boolean }) {
   return (
     <section id="pricing" className={styles.pricing} aria-labelledby="pricing-heading">
       <div className={styles.pricingHeader} data-motion-reveal>
@@ -80,7 +80,7 @@ export function PricingSection() {
               {plan.price !== 'Custom' && <span>/ month</span>}
             </div>
             <p className={styles.priceNote}>Proposed plan · not yet available</p>
-            <AccessAction arrow />
+            <AccessAction arrow authenticated={authenticated} />
             <ul>
               {plan.features.map((feature) => (
                 <li key={feature}>
