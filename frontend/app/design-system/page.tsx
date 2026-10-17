@@ -90,7 +90,7 @@ export default function DesignSystemPage() {
         </section>
         <section className="ds-panel">
           <h2 className="af-heading-3">02. Typography</h2>
-          <p>DM Serif Display 400 for editorial headings. Inter for the interface.</p>
+          <p>Playfair Display for editorial headings. Montserrat for the interface.</p>
           <div className="ds-stack">
             <div className="af-display-xl">Display XL</div>
             <div className="af-heading-1">Heading one</div>

@@ -1,11 +1,13 @@
 import { TreeStructureIcon, ArrowsLeftRightIcon, ArrowRightIcon } from '@phosphor-icons/react/ssr';
 import { BrandWordmark } from '@/components/design-system';
+import Image from 'next/image';
+import oliveBranch from '@/public/images/brand/component6.png';
 import styles from './complete.module.css';
 
 export function PurposeSection() {
   return (
     <section id="purpose" className={styles.purpose} aria-labelledby="purpose-heading">
-      <div className={styles.intro}>
+      <div className={styles.intro} data-motion-reveal>
         <p className={styles.eyebrow}>Why AgentFactory OS</p>
         <h2 id="purpose-heading">
           Your idea deserves
@@ -21,7 +23,7 @@ export function PurposeSection() {
           See how it comes together <ArrowRightIcon size={18} aria-hidden="true" />
         </a>
       </div>
-      <div className={styles.purposeCards}>
+      <div className={styles.purposeCards} data-motion-reveal data-motion-group>
         <article>
           <TreeStructureIcon size={28} weight="light" aria-hidden="true" />
           <span>01 / THE ORGANIZATION</span>
@@ -48,6 +50,19 @@ export function PurposeSection() {
 export function CompleteFooter() {
   return (
     <footer className={styles.footer}>
+      <div className={styles.footerSignature} data-motion-reveal>
+        <p>
+          Built for people.
+          <br />
+          <span>Designed for possibility.</span>
+        </p>
+        <Image
+          src={oliveBranch}
+          alt=""
+          aria-hidden="true"
+          sizes="(max-width: 767px) 180px, 360px"
+        />
+      </div>
       <div className={styles.footerGrid}>
         <div className={styles.footerBrand}>
           <a href="#overview" aria-label="AgentFactory OS home">

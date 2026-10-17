@@ -21,8 +21,8 @@
   --af-white: #ffffff;
 
   /* Typography */
-  --af-font-display: var(--font-dm-serif-display), Georgia, 'Times New Roman', serif;
-  --af-font-interface: var(--font-inter), Inter, ui-sans-serif, system-ui, sans-serif;
+  --af-font-display: var(--font-playfair-display), Georgia, 'Times New Roman', serif;
+  --af-font-interface: var(--font-montserrat), Montserrat, ui-sans-serif, system-ui, sans-serif;
   --af-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   --af-display-xl-size: 4.5rem;

@@ -54,13 +54,43 @@
   font-size: 14px;
 }
 .desktopNav a {
+  position: relative;
   padding-block: 12px;
+}
+.desktopNav a::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 4px;
+  height: 1px;
+  background: var(--af-forest-700);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 160ms ease-out;
+}
+.desktopNav a:is(:hover, :focus-visible)::after {
+  transform: scaleX(1);
+}
+.page :is(button, a) > svg {
+  transition: translate 160ms ease-out;
+}
+.primaryAction:active,
+.secondaryAction:active {
+  translate: 0 1px;
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .primaryAction:hover > svg,
+  .secondaryAction:hover > svg {
+    translate: 3px 0;
+  }
 }
 .desktopNav a:hover,
 .textAction:hover {
   color: var(--af-forest-700);
   text-decoration: underline;
   text-underline-offset: 6px;
+}
+.desktopNav a:hover {
+  text-decoration: none;
 }
 .primaryAction,
 .secondaryAction {
@@ -109,6 +139,32 @@
 }
 .mobileNav {
   display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--af-surface);
+  box-shadow: 0 16px 32px rgb(18 22 18 / 14%);
+  border-bottom: 1px solid var(--af-border);
+  max-height: calc(100dvh - 88px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  animation: menuReveal 160ms ease-out;
+}
+@keyframes menuReveal {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mobileNav {
+    animation: none;
+  }
 }
 .hero {
   position: relative;

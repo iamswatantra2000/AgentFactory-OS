@@ -38,7 +38,7 @@ export function Principles() {
       className={styles.principles}
       aria-label="The foundations of accountable work"
     >
-      <div className={styles.principlesInner}>
+      <div className={styles.principlesInner} data-motion-reveal data-motion-group>
         {principles.map(({ Icon, title, copy, tone }) => (
           <article key={title} className={styles.principle}>
             <span className={`${styles.principleIcon} ${styles[tone]}`}>
@@ -94,7 +94,7 @@ export function WorkflowSection() {
           A company is more than a collection of agents. Design the roles, responsibilities, and
           flow of work together—before you automate.
         </p>
-        <ol className={styles.stages}>
+        <ol className={styles.stages} data-motion-reveal data-motion-group>
           {stages.map(({ Icon, title, copy, tone }, index) => (
             <li key={title}>
               <span className={`${styles.stageIcon} ${styles[tone]}`}>
@@ -129,7 +129,7 @@ export function WorkflowSection() {
 export function GovernanceSection() {
   return (
     <section id="governance" className={styles.governance} aria-labelledby="governance-heading">
-      <div className={styles.governanceCopy}>
+      <div className={styles.governanceCopy} data-motion-reveal>
         <p className={styles.eyebrow}>Clarity before autonomy</p>
         <h2 id="governance-heading">
           A role is a responsibility.

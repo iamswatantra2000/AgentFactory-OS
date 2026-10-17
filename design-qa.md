@@ -1,5 +1,23 @@
 # Landing-page QA — 2026-10-17
 
+## Motion enhancement verification
+
+GSAP 3.15.0 is dynamically loaded for one-shot section/group reveals. Existing
+components gain card, navigation, and CTA feedback without changing the brand tokens.
+Motion lifecycle and launch boundaries are documented in the landing component folder's
+`MOTION.md`. Uses scoped matchMedia cleanup and live reduced-motion preference handling.
+
+Verified in browser: mobile pricing anchor closes its overlay; GSAP reveal starts at
+18px translation and 0.72 opacity, then clears to no transform/full opacity. At 361px,
+document width equals viewport width. Captured console errors: none. Desktop pricing
+and mobile footer inspected. `motion-pricing.png` is saved in the outputs landing folder.
+Formatting, lint, TypeScript, 3 reveal-policy tests and production build pass.
+
+Limitations: reduced-motion preference changes and JavaScript-disabled behavior were
+reviewed in source but not browser-emulated in this pass. No claim of full accessibility,
+security, performance, or production-release certification. Pricing/newsletter remain
+explicit previews. Typography is now Playfair Display / Montserrat, superseding earlier notes.
+
 ## Completed landing expansion
 
 The current screen now includes purpose, working flow, governance, three proposed pricing

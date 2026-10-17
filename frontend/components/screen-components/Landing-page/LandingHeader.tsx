@@ -1,5 +1,5 @@
 'use client';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ListIcon, XIcon } from '@phosphor-icons/react';
 import { BrandWordmark } from '@/components/design-system';
 import { AccessAction } from './AccessAction';
@@ -13,9 +13,36 @@ const links = [
 export function LandingHeader() {
   const [open, setOpen] = useState(false);
   const toggle = useRef<HTMLButtonElement>(null);
+  const openedByHover = useRef(false);
+  const header = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const closeOutside = (event: PointerEvent) => {
+      if (!header.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const desktop = window.matchMedia('(min-width: 960px)');
+    const closeOnDesktop = () => {
+      if (desktop.matches) setOpen(false);
+    };
+    document.addEventListener('pointerdown', closeOutside);
+    desktop.addEventListener('change', closeOnDesktop);
+    return () => {
+      document.removeEventListener('pointerdown', closeOutside);
+      desktop.removeEventListener('change', closeOnDesktop);
+    };
+  }, [open]);
   return (
     <header
+      ref={header}
       className={styles.header}
+      onPointerLeave={(event) => {
+        openedByHover.current = false;
+        if (event.pointerType === 'mouse' && !header.current?.contains(document.activeElement))
+          setOpen(false);
+      }}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
+      }}
       onKeyDown={(event) => {
         if (event.key === 'Escape' && open) {
           setOpen(false);
@@ -45,7 +72,17 @@ export function LandingHeader() {
           aria-label={open ? 'Close navigation' : 'Open navigation'}
           aria-expanded={open}
           aria-controls="landing-mobile-navigation"
-          onClick={() => setOpen(!open)}
+          onClick={(event) => {
+            if (event.detail > 0 && openedByHover.current) {
+              openedByHover.current = false;
+              setOpen(true);
+            } else setOpen(!open);
+          }}
+          onPointerEnter={(event) => {
+            if (event.pointerType === 'mouse' && window.matchMedia('(hover: hover)').matches)
+              openedByHover.current = !open;
+            setOpen(true);
+          }}
         >
           {open ? <XIcon size={24} /> : <ListIcon size={24} />}
         </button>

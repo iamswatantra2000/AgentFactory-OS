@@ -1,17 +1,16 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
-import { DM_Serif_Display, Inter } from 'next/font/google';
+import { Playfair_Display, Montserrat } from 'next/font/google';
 import '../components/design-system/tokens.css';
 import '../components/design-system/components.css';
 import '../components/design-system/patterns.css';
 
-const display = DM_Serif_Display({
-  weight: '400',
+const display = Playfair_Display({
   subsets: ['latin'],
-  variable: '--font-dm-serif-display',
+  variable: '--font-playfair-display',
 });
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const interfaceFont = Montserrat({ subsets: ['latin'], variable: '--font-montserrat' });
 
 export const metadata: Metadata = {
   title: {
@@ -23,7 +22,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="en" className={`${display.variable} ${inter.variable}`}>
+    <html lang="en" className={`${display.variable} ${interfaceFont.variable}`}>
       <body>{children}</body>
     </html>
   );

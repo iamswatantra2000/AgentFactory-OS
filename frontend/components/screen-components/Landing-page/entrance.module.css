@@ -1,0 +1,73 @@
+.entrance {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  background: var(--af-canvas);
+  pointer-events: none;
+  animation: reveal 1.4s ease-in-out forwards;
+}
+.brand {
+  text-align: center;
+  padding: 24px;
+  animation: arrive 600ms ease-out both;
+}
+.brand :global(.ds-wordmark) {
+  font-size: clamp(32px, 6vw, 64px);
+}
+.brand p {
+  margin: 24px 0;
+  font-size: 10px;
+  line-height: 20px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--af-forest-800);
+}
+.line {
+  display: block;
+  width: 64px;
+  height: 1px;
+  margin: auto;
+  background: var(--af-forest-800);
+  transform-origin: left;
+  animation: extend 850ms ease-out both;
+}
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes extend {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes reveal {
+  0%,
+  60% {
+    opacity: 1;
+    visibility: visible;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+/* Keyboard users never have to wait for decorative content. */
+:global(body):has(:focus-visible) .entrance {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .entrance {
+    display: none;
+  }
+}

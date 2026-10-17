@@ -39,7 +39,7 @@ the product-specific priority-column/detail-drawer pattern is not implemented he
 ## Fidelity and boundaries
 
 The written spec takes precedence over screenshot colors affected by lighting/texture.
-DM Serif Display 400 and Inter are loaded using Next's Google-font integration.
+Playfair Display and Montserrat are loaded using Next's Google-font integration.
 Source token hex values and typography sizes are preserved. `sage-200`, blue information
 colors and several derived hover/tint values are supplemental choices, not source tokens.
 Phosphor outline icons are the closest installed library; their stroke geometry is not

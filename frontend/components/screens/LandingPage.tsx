@@ -1,4 +1,6 @@
 import { LandingHeader } from '../screen-components/Landing-page/LandingHeader';
+import { LandingEntrance } from '../screen-components/Landing-page/LandingEntrance';
+import { LandingMotion } from '../screen-components/Landing-page/LandingMotion';
 import { LandingHero } from '../screen-components/Landing-page/LandingHero';
 import {
   Principles,
@@ -14,7 +16,8 @@ import {
 
 export default function LandingPage() {
   return (
-    <div className={styles.page}>
+    <LandingMotion className={styles.page}>
+      <LandingEntrance />
       <a className={styles.skipLink} href="#main-content">
         Skip to content
       </a>
@@ -29,6 +32,6 @@ export default function LandingPage() {
         <NewsletterSection />
       </main>
       <CompleteFooter />
-    </div>
+    </LandingMotion>
   );
 }

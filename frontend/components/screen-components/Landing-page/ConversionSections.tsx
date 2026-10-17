@@ -1,7 +1,9 @@
 'use client';
 import { useState } from 'react';
+import Image from 'next/image';
+import oliveBranch from '@/public/images/brand/component7.png';
 import { CheckCircleIcon, ArrowRightIcon, EnvelopeSimpleIcon } from '@phosphor-icons/react';
-import { Button, TextField } from '@/components/design-system';
+import { Button, Card, TextField } from '@/components/design-system';
 import { AccessAction } from './AccessAction';
 import styles from './complete.module.css';
 
@@ -43,7 +45,7 @@ const plans = [
 export function PricingSection() {
   return (
     <section id="pricing" className={styles.pricing} aria-labelledby="pricing-heading">
-      <div className={styles.pricingHeader}>
+      <div className={styles.pricingHeader} data-motion-reveal>
         <div>
           <p className={styles.eyebrow}>Simple plans. Clear expectations.</p>
           <h2 id="pricing-heading">
@@ -58,7 +60,7 @@ export function PricingSection() {
         Proposed pricing · USD · Monthly per workspace. These are design placeholders, not
         purchasable offers. Features and final prices are subject to confirmation.
       </p>
-      <div className={styles.plans}>
+      <div className={styles.plans} data-motion-reveal data-motion-group>
         {plans.map((plan) => (
           <article
             key={plan.name}
@@ -104,6 +106,13 @@ export function NewsletterSection() {
   const [message, setMessage] = useState('');
   return (
     <section id="newsletter" className={styles.newsletter} aria-labelledby="newsletter-heading">
+      <Image
+        src={oliveBranch}
+        alt=""
+        aria-hidden="true"
+        className={styles.newsletterArt}
+        sizes="320px"
+      />
       <div>
         <p className={styles.eyebrow}>A thoughtful update, not another distraction</p>
         <h2 id="newsletter-heading">
@@ -115,9 +124,29 @@ export function NewsletterSection() {
           Product milestones, practical ideas for designing your AI-enabled company, and a first
           look at what comes next.
         </p>
+        <ul className={styles.newsletterTopics} aria-label="Newsletter topics">
+          <li>
+            <CheckCircleIcon size={18} aria-hidden="true" /> Product notes
+          </li>
+          <li>
+            <CheckCircleIcon size={18} aria-hidden="true" /> Practical workflows
+          </li>
+          <li>
+            <CheckCircleIcon size={18} aria-hidden="true" /> Thoughtful progress
+          </li>
+        </ul>
       </div>
-      <div className={styles.newsletterForm}>
-        <EnvelopeSimpleIcon size={28} weight="light" aria-hidden="true" />
+      <Card raised className={styles.newsletterForm} data-motion-reveal>
+        <div className={styles.newsletterCardHeader}>
+          <span className={styles.mailIcon}>
+            <EnvelopeSimpleIcon size={28} weight="light" aria-hidden="true" />
+          </span>
+          <span className={styles.editionLabel}>
+            The field notes
+            <br />
+            <strong>AgentFactory OS</strong>
+          </span>
+        </div>
         <h3>Notes from AgentFactory OS</h3>
         <p>
           Newsletter signup is coming soon. You can preview the form below; your email won’t be
@@ -152,7 +181,7 @@ export function NewsletterSection() {
           No submission leaves this browser. A subscription service and consent policy will be added
           before launch.
         </small>
-      </div>
+      </Card>
     </section>
   );
 }
