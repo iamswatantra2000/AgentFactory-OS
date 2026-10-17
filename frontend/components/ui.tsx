@@ -6,7 +6,7 @@ export function BrandMark() {
       <span aria-hidden="true" className="af-brand-mark">
         AF
       </span>
-      <span>AgentFactory OS</span>
+      <span className="af-brand-wordmark">AgentFactory OS</span>
     </span>
   );
 }

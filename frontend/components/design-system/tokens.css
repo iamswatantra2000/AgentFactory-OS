@@ -90,6 +90,17 @@
   --af-component-gap: 1.5rem;
 }
 
+/* Semantic headings use the editorial face even without a utility class. */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--af-font-display);
+  font-weight: 400;
+}
+
 .af-display-xl,
 .af-heading-1,
 .af-heading-2,

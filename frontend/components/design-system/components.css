@@ -569,7 +569,7 @@
   border-radius: var(--af-radius-pill);
   background: var(--af-paper);
   color: var(--af-ink);
-  font-family: var(--af-font-display);
+  font-family: var(--af-font-interface);
   font-size: 0.875rem;
 }
 
@@ -666,15 +666,6 @@
 .af-icon-button:hover {
   background: var(--af-sage-100);
   color: var(--af-forest-800);
-}
-
-@media (max-width: 47.9375rem) {
-  .af-table th:nth-child(3),
-  .af-table td:nth-child(3),
-  .af-table th:nth-child(5),
-  .af-table td:nth-child(5) {
-    display: none;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

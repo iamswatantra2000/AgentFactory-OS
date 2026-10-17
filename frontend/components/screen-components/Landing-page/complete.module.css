@@ -1,0 +1,351 @@
+.purpose,
+.pricing,
+.newsletter,
+.footer {
+  padding: 80px max(48px, calc((100vw - 1344px) / 2));
+}
+.eyebrow {
+  color: var(--af-forest-800);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 11px;
+  line-height: 18px;
+  font-weight: 600;
+  margin: 0 0 24px;
+}
+.purpose h2,
+.pricing h2,
+.newsletter h2 {
+  font: 400 clamp(36px, 4vw, 56px)/1.08 var(--af-font-display);
+  letter-spacing: -0.025em;
+  margin: 0 0 24px;
+}
+.purpose {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  background: var(--af-canvas);
+  border-bottom: 1px solid var(--af-border);
+}
+.intro > p:not(.eyebrow) {
+  font-size: 16px;
+  line-height: 28px;
+  color: var(--af-slate);
+  margin: 0 0 24px;
+}
+.intro a,
+.footerNote a {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--af-forest-800);
+  padding: 12px 0;
+}
+.purposeCards {
+  display: grid;
+  gap: 20px;
+}
+.purposeCards article {
+  padding: 24px;
+  border: 1px solid var(--af-border);
+  border-radius: 8px;
+  background: var(--af-surface);
+}
+.purposeCards svg {
+  color: var(--af-forest-800);
+  margin-bottom: 12px;
+}
+.purposeCards span {
+  display: block;
+  color: var(--af-slate);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+.purposeCards h3 {
+  font: 400 28px/34px var(--af-font-display);
+  margin: 12px 0;
+}
+.purposeCards p {
+  color: var(--af-slate);
+  font-size: 14px;
+  line-height: 24px;
+  margin: 0;
+}
+.pricing {
+  border-bottom: 1px solid var(--af-border);
+}
+.pricingHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 48px;
+}
+.pricingHeader > p {
+  color: var(--af-slate);
+  max-width: 320px;
+  line-height: 26px;
+  margin-bottom: 28px;
+}
+.previewNote {
+  padding: 14px 18px;
+  border-left: 2px solid var(--af-forest-700);
+  background: var(--af-canvas);
+  color: var(--af-slate);
+  font-size: 12px;
+  line-height: 20px;
+  margin: 12px 0 32px;
+}
+.plans {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+.plan {
+  border: 1px solid var(--af-border);
+  border-radius: 8px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+}
+.featured {
+  background: var(--af-sage-100);
+  border-color: var(--af-forest-700);
+}
+.planLabel {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--af-forest-800);
+  margin: 0 0 20px;
+}
+.plan h3 {
+  font: 400 32px/38px var(--af-font-display);
+  margin: 0 0 8px;
+}
+.planDescription {
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--af-slate);
+  min-height: 44px;
+  margin: 0;
+}
+.price {
+  font: 400 48px/56px var(--af-font-display);
+  margin: 24px 0 4px;
+}
+.price span {
+  font: 400 13px/20px var(--af-font-interface);
+  color: var(--af-slate);
+  margin-left: 8px;
+}
+.priceNote {
+  font-size: 11px;
+  color: var(--af-slate);
+  margin: 0 0 24px;
+}
+.plan > button {
+  width: 100%;
+}
+.plan ul {
+  list-style: none;
+  padding: 24px 0;
+  margin: 24px 0 0;
+  border-top: 1px solid var(--af-border);
+  flex: 1;
+}
+.plan li {
+  display: flex;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 21px;
+  margin-bottom: 14px;
+}
+.plan li svg {
+  flex-shrink: 0;
+  color: var(--af-forest-700);
+  margin-top: 2px;
+}
+.planFoot,
+.pricingFoot {
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--af-slate);
+}
+.planFoot {
+  margin: 0;
+}
+.pricingFoot {
+  text-align: center;
+  margin: 24px 0 0;
+}
+.newsletter {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 100px;
+  background: var(--af-forest-900);
+  color: var(--af-surface);
+}
+.newsletter .eyebrow {
+  color: var(--af-sage-100);
+}
+.newsletter h2 {
+  color: var(--af-surface);
+}
+.newsletter > div > p:not(.eyebrow) {
+  font-size: 16px;
+  line-height: 27px;
+  max-width: 480px;
+  color: var(--af-sage-100);
+}
+.newsletterForm {
+  background: var(--af-surface);
+  padding: 32px;
+  border-radius: 8px;
+  color: var(--af-ink);
+}
+.newsletterForm > svg {
+  color: var(--af-forest-800);
+}
+.newsletterForm h3 {
+  font: 400 25px/32px var(--af-font-display);
+  margin: 16px 0 12px;
+}
+.newsletter > .newsletterForm > p:not(.eyebrow) {
+  font-size: 13px;
+  line-height: 22px;
+  color: var(--af-slate);
+}
+.newsletterForm form {
+  margin-top: 24px;
+}
+.newsletterForm button {
+  width: 100%;
+  margin-top: 12px;
+}
+.newsletterForm small {
+  font-size: 11px;
+  line-height: 18px;
+  color: var(--af-slate);
+  display: block;
+}
+.formStatus {
+  color: var(--af-forest-800);
+  font-size: 13px;
+  line-height: 20px;
+  margin: 14px 0;
+}
+.formStatus:empty {
+  margin: 12px 0;
+}
+.footer {
+  background: var(--af-canvas);
+  padding-bottom: 24px;
+}
+.footerGrid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1.2fr;
+  gap: 40px;
+}
+.footerBrand p {
+  font-size: 14px;
+  line-height: 24px;
+  color: var(--af-slate);
+  margin: 20px 0;
+}
+.footerBrand > span {
+  font-size: 11px;
+  color: var(--af-slate);
+}
+.footerBrand :global(.ds-wordmark) {
+  color: var(--af-ink);
+  font-size: 30px;
+}
+.footer h2 {
+  font: 500 14px/20px var(--af-font-interface);
+  margin: 0 0 20px;
+}
+.footer nav a {
+  display: block;
+  font-size: 13px;
+  line-height: 20px;
+  padding: 8px 0;
+  color: var(--af-slate);
+}
+.footer a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.footerNote p {
+  font-size: 13px;
+  line-height: 23px;
+  color: var(--af-slate);
+}
+.footerBottom {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  border-top: 1px solid var(--af-border);
+  padding-top: 24px;
+  margin-top: 48px;
+  color: var(--af-slate);
+  font-size: 11px;
+}
+.footerBottom p {
+  margin: 0;
+}
+@media (max-width: 1100px) {
+  .purpose,
+  .newsletter {
+    gap: 40px;
+  }
+  .plan {
+    padding: 24px 20px;
+  }
+  .footerGrid {
+    grid-template-columns: 1.3fr 1fr 1fr;
+  }
+  .footerNote {
+    grid-column: 1 / -1;
+    max-width: 500px;
+  }
+}
+@media (max-width: 767px) {
+  .purpose,
+  .pricing,
+  .newsletter,
+  .footer {
+    padding: 48px 20px;
+  }
+  .purpose,
+  .newsletter {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .pricingHeader {
+    display: block;
+  }
+  .plans {
+    grid-template-columns: 1fr;
+  }
+  .planDescription {
+    min-height: 0;
+  }
+  .newsletterForm {
+    padding: 24px;
+  }
+  .footerGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  .footerBrand {
+    grid-column: 1 / -1;
+  }
+  .footerBottom {
+    flex-direction: column;
+    gap: 14px;
+  }
+  .eyebrow {
+    font-size: 10px;
+  }
+}
