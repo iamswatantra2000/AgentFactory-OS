@@ -5,6 +5,7 @@ import cors from 'cors';
 import express, {
   type NextFunction,
   type Request,
+  type RequestHandler,
   type Response as ExpressResponse,
 } from 'express';
 import * as helmetModule from 'helmet';
@@ -16,9 +17,19 @@ import type { loadConfig } from './config.js';
 type Config = ReturnType<typeof loadConfig>;
 
 type ServiceStatus = { name: string; status: string; timestamp: string };
+type UpstreamResponse = {
+  readonly ok: boolean;
+  readonly status: number;
+  json(): Promise<unknown>;
+};
 const sessionCookie = 'af_session';
 const sessionMaxAgeMs = 7 * 24 * 60 * 60 * 1000;
 const authWindowMs = 15 * 60 * 1000;
+const helmet = helmetModule.default as unknown as () => RequestHandler;
+
+async function upstreamFetch(...args: Parameters<typeof fetch>): Promise<UpstreamResponse> {
+  return (await fetch(...args)) as unknown as UpstreamResponse;
+}
 
 function authLimiter() {
   const attempts = new Map<string, { count: number; resetAt: number }>();
@@ -76,7 +87,7 @@ async function identityRequest(
   path: string,
   options: { method?: 'GET' | 'POST'; body?: unknown; token?: string } = {},
 ) {
-  return fetch(`${config.IDENTITY_SERVICE_URL}${path}`, {
+  return upstreamFetch(`${config.IDENTITY_SERVICE_URL}${path}`, {
     method: options.method ?? 'GET',
     headers: {
       ...(options.body ? { 'content-type': 'application/json' } : {}),
@@ -89,7 +100,7 @@ async function identityRequest(
 }
 
 async function readProjectStatus(config: Config, correlationId: string): Promise<ServiceStatus> {
-  const response = await fetch(`${config.PROJECT_SERVICE_URL}/health/ready`, {
+  const response = await upstreamFetch(`${config.PROJECT_SERVICE_URL}/health/ready`, {
     headers: { 'x-correlation-id': correlationId },
     signal: AbortSignal.timeout(2_000),
   });
@@ -152,7 +163,7 @@ async function proxyProject(
           return identityProblem(response, 400, 'Select members from this workspace');
       }
     }
-    const upstream = await fetch(`${config.PROJECT_SERVICE_URL}${path}`, {
+    const upstream = await upstreamFetch(`${config.PROJECT_SERVICE_URL}${path}`, {
       method: request.method,
       headers: {
         'x-af-internal-token': config.PROJECT_SERVICE_INTERNAL_TOKEN,
@@ -175,7 +186,7 @@ export async function createApp(config: Config) {
   const logger = createLogger('api-gateway');
   const app = express();
   app.disable('x-powered-by');
-  app.use(helmetModule.default());
+  app.use(helmet());
   app.use(
     pinoHttp({
       logger,
