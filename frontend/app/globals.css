@@ -9,6 +9,85 @@ body {
   font-family: var(--af-font-interface);
 }
 
+/* Workspace typography also reaches native dialogs and the portaled fullscreen editor. */
+body:has([data-dashboard-flow]) {
+  --af-font-display: var(--font-inter-tight), 'Inter Tight', Arial, sans-serif;
+  --af-font-interface: var(--font-montserrat), Montserrat, ui-sans-serif, system-ui, sans-serif;
+  --af-weight-page: 600;
+  --af-weight-section: 600;
+  --af-weight-card: 550;
+  --af-weight-metric: 600;
+}
+
+/* Keep the workspace hierarchy distinct from the editorial landing page. */
+:where(body:has([data-dashboard-flow])) :is(h1, .af-display-xl, .af-heading-1) {
+  font-weight: var(--af-weight-page);
+}
+
+:where(body:has([data-dashboard-flow])) :is(h2, .af-heading-2) {
+  font-weight: var(--af-weight-section);
+}
+
+:where(body:has([data-dashboard-flow])) :is(h3, h4, h5, h6, .af-heading-3, .af-heading-4) {
+  font-weight: var(--af-weight-card);
+}
+
+body:has([data-dashboard-flow]) .af-card__title {
+  font-weight: var(--af-weight-card);
+}
+
+/* Native dialogs retain the top layer while their exit transition completes. */
+dialog {
+  opacity: 0;
+  transform: translateY(12px) scale(0.985);
+  transition:
+    opacity 220ms ease,
+    transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    display 220ms allow-discrete,
+    overlay 220ms allow-discrete;
+}
+dialog[open] {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+dialog::backdrop {
+  opacity: 0;
+  transition:
+    opacity 220ms ease,
+    display 220ms allow-discrete,
+    overlay 220ms allow-discrete;
+}
+dialog[open]::backdrop {
+  opacity: 1;
+}
+@starting-style {
+  dialog[open] {
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+  }
+  dialog[open]::backdrop {
+    opacity: 0;
+  }
+}
+
+@keyframes af-screen-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  dialog,
+  dialog::backdrop {
+    transition: none;
+  }
+}
+
 a {
   color: inherit;
 }

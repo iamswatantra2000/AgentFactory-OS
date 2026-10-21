@@ -1,4 +1,6 @@
 ALTER TABLE "User" ADD COLUMN "emailVerifiedAt" TIMESTAMP(3);
+-- Preserve access for accounts created before email verification was introduced.
+UPDATE "User" SET "emailVerifiedAt" = CURRENT_TIMESTAMP WHERE "passwordHash" IS NOT NULL;
 
 CREATE TABLE "AuthToken" (
   "tokenHash" TEXT NOT NULL,

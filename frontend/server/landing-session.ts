@@ -46,8 +46,8 @@ export async function getLandingSession(cookieHeader: string): Promise<LandingSe
   }
 }
 
-/** Decorative entrance appears only for a verified signed-out request. */
+/** Show the public entrance whenever there is no valid signed-in session. */
 export async function shouldShowLandingEntrance(cookieHeader: string): Promise<boolean> {
   const session = await getLandingSession(cookieHeader);
-  return session?.authenticated === false;
+  return session?.authenticated !== true;
 }

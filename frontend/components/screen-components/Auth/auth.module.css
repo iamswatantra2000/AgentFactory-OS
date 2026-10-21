@@ -1,33 +1,49 @@
 .page {
-  min-height: 100dvh;
+  height: 100dvh;
   display: grid;
   place-items: center;
-  padding: 48px 24px;
+  padding: clamp(12px, 2.5vh, 30px) 24px;
+  overflow: hidden;
   background: var(--af-canvas);
   color: var(--af-ink);
   font-family: var(--af-font-interface);
 }
 .frame {
   width: min(100%, 1100px);
-  min-height: 660px;
+  height: min(780px, 100%);
   display: grid;
-  grid-template-columns: minmax(300px, 40%) minmax(0, 60%);
+  grid-template-columns: minmax(300px, 34%) minmax(0, 66%);
   overflow: hidden;
   border: 1px solid var(--af-border);
   border-radius: 12px;
   background: var(--af-surface);
   box-shadow: 0 24px 64px rgb(18 22 18 / 10%);
+  animation: af-screen-enter 280ms ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .frame {
+    animation: none;
+  }
 }
 .brandRail {
   position: relative;
   isolation: isolate;
-  min-height: 660px;
-  padding: 42px;
+  min-height: 0;
+  padding: clamp(24px, 4vh, 42px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   background: var(--af-forest-900);
   color: var(--af-surface);
+}
+.brandRail::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  inset: auto 0 0;
+  height: 110px;
+  background: linear-gradient(to bottom, transparent, rgb(19 61 40 / 86%));
+  pointer-events: none;
 }
 .wordmark {
   position: relative;
@@ -67,11 +83,17 @@
 .railArt {
   position: absolute;
   z-index: 0;
-  left: -38%;
-  bottom: -7%;
-  width: 200%;
-  height: auto;
+  left: 0;
+  top: 0;
+  width: auto;
+  height: 100%;
+  mix-blend-mode: screen;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, transparent 25%, #000 45%);
+  mask-image: linear-gradient(to bottom, transparent 0%, transparent 25%, #000 45%);
   pointer-events: none;
+}
+.railLeaf {
+  display: none;
 }
 .railFoot {
   position: relative;
@@ -79,10 +101,12 @@
   margin-top: auto;
 }
 .content {
-  padding: 42px clamp(32px, 7vw, 88px);
+  min-height: 0;
+  overflow-y: auto;
+  padding: clamp(16px, 2vh, 26px) clamp(28px, 5vw, 72px);
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: safe center;
 }
 .backLink,
 .switchLink a {
@@ -92,10 +116,10 @@
 .backLink {
   align-self: flex-start;
   font-size: 12px;
-  margin-bottom: 40px;
+  margin-bottom: 10px;
 }
 .formIntro {
-  margin-bottom: 28px;
+  margin-bottom: 8px;
 }
 .eyebrow {
   margin: 0 0 12px;
@@ -106,8 +130,8 @@
   text-transform: uppercase;
 }
 .formIntro h1 {
-  margin: 0 0 12px;
-  font: 400 clamp(40px, 4vw, 56px)/1.08 var(--af-font-display);
+  margin: 0 0 8px;
+  font: 400 clamp(36px, 3.7vw, 52px)/1.08 var(--af-font-display);
   letter-spacing: -0.035em;
 }
 .formIntro > p:last-child {
@@ -119,7 +143,84 @@
 }
 .form {
   display: grid;
-  gap: 20px;
+  gap: 8px;
+}
+.formArea {
+  display: grid;
+  gap: 8px;
+}
+.inlineLink,
+.textButton {
+  justify-self: end;
+  color: var(--af-forest-800);
+  font: inherit;
+  font-size: 12px;
+  text-underline-offset: 4px;
+}
+.textButton {
+  border: 0;
+  background: none;
+  text-decoration: underline;
+  cursor: pointer;
+  justify-self: start;
+}
+.socialArea {
+  padding-top: 6px;
+  border-top: 1px solid var(--af-border);
+  text-align: center;
+}
+.socialArea p {
+  margin: 0 0 6px;
+  font-size: 11px;
+  color: var(--af-slate);
+}
+.socialArea small {
+  display: block;
+  margin-top: 8px;
+  color: var(--af-slate);
+  font-size: 10px;
+}
+.socialButtons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.socialButton {
+  display: grid;
+  place-items: center;
+  min-height: 34px;
+  padding: 4px;
+  border: 1px solid var(--af-forest-800);
+  border-radius: 6px;
+  color: var(--af-forest-900);
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 600;
+  transition:
+    background 160ms ease,
+    transform 160ms ease;
+}
+.socialButton:hover:not(.socialDisabled) {
+  background: var(--af-sage-100);
+  transform: translateY(-2px);
+}
+.socialDisabled {
+  border-color: var(--af-border);
+  color: var(--af-slate);
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.resultAction {
+  display: grid;
+  place-items: center;
+  min-height: 48px;
+  width: 100%;
+  border-radius: 6px;
+  background: var(--af-forest-900);
+  color: white;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
 }
 .formError {
   margin: 0;
@@ -133,11 +234,11 @@
 }
 .submit {
   width: 100%;
-  margin-top: 8px;
+  margin-top: 2px;
 }
 .switchLink {
-  margin: 28px 0 0;
-  padding-top: 24px;
+  margin: 8px 0 0;
+  padding-top: 8px;
   border-top: 1px solid var(--af-border);
   font-size: 13px;
 }
@@ -150,18 +251,26 @@
 }
 @media (max-width: 767px) {
   .page {
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
     padding: 0;
     place-items: stretch;
   }
   .frame {
-    min-height: 100dvh;
+    height: 100dvh;
+    min-height: 0;
     grid-template-columns: 1fr;
+    grid-template-rows: 116px minmax(0, 1fr);
     border: 0;
     border-radius: 0;
   }
   .brandRail {
-    min-height: 150px;
-    padding: 24px;
+    min-height: 0;
+    padding: 20px;
+  }
+  .brandRail::after {
+    display: none;
   }
   .wordmark {
     font-size: 26px;
@@ -179,16 +288,35 @@
     font-size: 9px;
   }
   .railArt {
+    display: none;
+  }
+  .railLeaf {
+    position: absolute;
+    z-index: 0;
+    display: block;
+    width: 230px;
+    height: auto;
+    top: -20px;
     left: auto;
-    right: -10%;
-    bottom: -110px;
-    width: 70%;
+    right: -108px;
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 35%);
+    mask-image: linear-gradient(to right, transparent 0%, #000 35%);
+    pointer-events: none;
+    pointer-events: none;
   }
   .content {
-    padding: 32px 24px 48px;
+    overflow-y: auto;
+    padding: 16px 20px 24px;
     justify-content: flex-start;
   }
   .backLink {
-    margin-bottom: 32px;
+    margin-bottom: 8px;
+  }
+  .formIntro h1 {
+    font-size: 36px;
+  }
+  .formIntro > p:last-child {
+    font-size: 13px;
+    line-height: 20px;
   }
 }

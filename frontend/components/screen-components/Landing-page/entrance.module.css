@@ -5,13 +5,13 @@
   display: grid;
   place-items: center;
   background: var(--af-canvas);
-  pointer-events: none;
-  animation: reveal 1.4s ease-in-out forwards;
+  pointer-events: auto;
+  animation: reveal 1.05s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 .brand {
   text-align: center;
   padding: 24px;
-  animation: arrive 600ms ease-out both;
+  animation: arrive 450ms ease-out both;
 }
 .brand :global(.ds-wordmark) {
   font-size: clamp(32px, 6vw, 64px);
@@ -31,7 +31,7 @@
   margin: auto;
   background: var(--af-forest-800);
   transform-origin: left;
-  animation: extend 850ms ease-out both;
+  animation: extend 620ms ease-out both;
 }
 @keyframes arrive {
   from {
@@ -53,7 +53,7 @@
 }
 @keyframes reveal {
   0%,
-  60% {
+  48% {
     opacity: 1;
     visibility: visible;
   }

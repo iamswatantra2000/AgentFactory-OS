@@ -10,7 +10,13 @@ export const metadata: Metadata = {
 };
 
 export default async function WelcomePage() {
-  const session = await getLandingSession((await cookies()).toString());
-  if (!session?.authenticated) redirect('/login');
+  const cookieStore = await cookies();
+  const session = await getLandingSession(cookieStore.toString());
+  if (!session?.authenticated)
+    redirect(
+      cookieStore.has('af_session') && session?.authenticated === false
+        ? '/login?notice=session-expired'
+        : '/login',
+    );
   return <LandingPage authenticated />;
 }

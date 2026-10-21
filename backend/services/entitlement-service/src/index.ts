@@ -18,7 +18,14 @@ const app = express();
 app.disable('x-powered-by');
 app.use(helmet());
 app.use(express.json({ limit: '64kb' }));
-app.use(pinoHttp({ logger }));
+app.use(
+  pinoHttp({
+    logger,
+    serializers: {
+      req: (request) => ({ id: request.id, method: request.method, url: request.url }),
+    },
+  }),
+);
 app.get('/health/live', (_req, res) =>
   res.json({ name: 'entitlement-service', status: 'ok', timestamp: new Date().toISOString() }),
 );

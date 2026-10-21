@@ -1,7 +1,15 @@
 # AgentFactory OS design system
 
 Reusable frontend primitives from the Measured Intelligence design specification.
-Preview at `/design-system`. Global styles and Google fonts are loaded by `app/layout.tsx`.
+Preview at `/design-system`. Global styles and locally hosted fonts are loaded by `app/layout.tsx`.
+
+The brand wordmark always uses Playfair Display, including inside the workspace. Public
+headings use Playfair Display; workspace headings use Inter Tight; interface copy uses
+Montserrat on both surfaces. Workspace page titles and sections use weight 600, card
+headings use 550, metrics use 600, and body copy stays at 400. The workspace rhythm
+tokens in `tokens.css` define heading gaps, copy leading, caption leading, and a readable
+text measure. Use these tokens when adding workspace screens instead of adjusting each
+paragraph independently.
 
 ```tsx
 import { Button, TextField, Card, CardBody, StatusChip } from '@/components/design-system';
@@ -39,7 +47,7 @@ the product-specific priority-column/detail-drawer pattern is not implemented he
 ## Fidelity and boundaries
 
 The written spec takes precedence over screenshot colors affected by lighting/texture.
-Playfair Display and Montserrat are loaded using Next's Google-font integration.
+Playfair Display, Inter Tight, and Montserrat are loaded as local variable fonts.
 Source token hex values and typography sizes are preserved. `sage-200`, blue information
 colors and several derived hover/tint values are supplemental choices, not source tokens.
 Phosphor outline icons are the closest installed library; their stroke geometry is not
@@ -53,6 +61,5 @@ button as a substitute for confirmation. Existing application screens are not re
 
 ## Validation
 
-Run `pnpm check` with the repository's Node 24 runtime. The current test command allows no
-tests; a successful command does not imply automated component test coverage. The gallery
-is available for browser checks and future visual regression tests.
+Run `pnpm check` with the repository's Node 24 runtime. The gallery is available for browser
+checks and future visual regression tests.

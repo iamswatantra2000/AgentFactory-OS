@@ -1,4 +1,5 @@
 import { ArrowRightIcon } from '@phosphor-icons/react/ssr';
+import Link from 'next/link';
 import styles from './landing.module.css';
 
 export function AccessAction({
@@ -11,18 +12,12 @@ export function AccessAction({
   authenticated?: boolean;
 }) {
   return (
-    <a
+    <Link
       className={signIn ? styles.textAction : styles.primaryAction}
       href={authenticated ? '/dashboard' : signIn ? '/login' : '/signup'}
     >
-      {authenticated
-        ? signIn
-          ? 'Dashboard'
-          : 'Go to dashboard'
-        : signIn
-          ? 'Sign in'
-          : 'Get started'}
+      {authenticated ? 'Go to dashboard' : signIn ? 'Sign in' : 'Get started'}
       {arrow && <ArrowRightIcon size={20} aria-hidden="true" />}
-    </a>
+    </Link>
   );
 }

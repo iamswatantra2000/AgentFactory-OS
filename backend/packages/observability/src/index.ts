@@ -3,6 +3,7 @@ import pino, { type Logger } from 'pino';
 const REDACT_PATHS = [
   'req.headers.authorization',
   'req.headers.cookie',
+  'req.headers["x-af-internal-token"]',
   'res.headers.set-cookie',
   '*.password',
   '*.token',

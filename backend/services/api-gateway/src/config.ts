@@ -4,6 +4,7 @@ const configSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   API_GATEWAY_PORT: z.coerce.number().int().min(1).max(65535).default(4000),
   PROJECT_SERVICE_URL: z.url().default('http://localhost:4003'),
+  PROJECT_SERVICE_INTERNAL_TOKEN: z.string().min(16).default('local-development-only-token'),
   IDENTITY_SERVICE_URL: z.url().default('http://localhost:4001'),
   ALLOWED_ORIGINS: z.string().default('http://localhost:3000'),
 });

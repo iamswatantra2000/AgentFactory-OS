@@ -45,7 +45,7 @@ const plans = [
 export function PricingSection({ authenticated = false }: { authenticated?: boolean }) {
   return (
     <section id="pricing" className={styles.pricing} aria-labelledby="pricing-heading">
-      <div className={styles.pricingHeader} data-motion-reveal>
+      <div className={styles.pricingHeader} data-motion-reveal data-motion-copy>
         <div>
           <p className={styles.eyebrow}>Simple plans. Clear expectations.</p>
           <h2 id="pricing-heading">
@@ -111,9 +111,10 @@ export function NewsletterSection() {
         alt=""
         aria-hidden="true"
         className={styles.newsletterArt}
+        data-motion-parallax
         sizes="320px"
       />
-      <div>
+      <div data-motion-reveal data-motion-copy>
         <p className={styles.eyebrow}>A thoughtful update, not another distraction</p>
         <h2 id="newsletter-heading">
           Follow the work

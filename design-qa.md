@@ -1,3 +1,93 @@
+# Visual Factory playground QA — 2026-10-19
+
+Reference: `/Users/swatantragupta/Downloads/agentfactoryos:images/dashboard-vf4.png` (1586 × 992). Rendered captures: `/Users/swatantragupta/Documents/Codex/2026-10-16/hi/visual-factory-desktop-qa.jpg` (normal desktop viewport) and `/Users/swatantragupta/Documents/Codex/2026-10-16/hi/visual-factory-mobile-qa.jpg` (390 × 844). The reference is a populated, in-progress test run; the implemented captures show an empty project draft, so the comparison covers composition, typography, color, surfaces and controls rather than identical operational content.
+
+The requested three regions are present: project navigation at left, dotted workflow canvas in the middle, and an agent/control library at right. The library is deliberately on the right per the user's instruction, whereas the reference image places it to the left of its canvas. Cream, forest and sage colors, Playfair/Montserrat hierarchy, leaf accent, compact panels and green active states carry over from the supplied design. The test console and live run status from the reference are not imitated because agent execution is not available; the UI explicitly labels the graph as a draft that does not run or publish.
+
+Findings and fixes:
+
+- [P1, fixed] At 390px the empty-canvas prompt sat beyond the horizontally scrollable surface. It is now visible in the first mobile viewport, with a Browse agent library jump for touch use.
+- [P1, fixed] Inspector field edits could be mistaken for a saved draft. Save now includes pending field edits, and the unsaved indicator/leave guard cover them.
+- [P2, fixed] The connected-handoffs check previously counted edges but could pass a disconnected graph. It now checks reachability across every node.
+- [P2, fixed] The preview dialog now receives keyboard focus, supports Escape and loops Tab through its controls.
+
+Browser interaction verified: the Project overview **Open playground** CTA navigates to Visual Factory; add a trigger, add an agent, connect their ports, drag another agent from the right library onto the canvas, and open the workflow preview. These interactions were tested without saving sample nodes to the user's project. The graph save route has passing service tests for read, invalid payload, save and stale-revision conflict. Frontend TypeScript, targeted ESLint, Vitest and production build passed; project-service tests passed (10/10). Browser console errors: none. The available Node is 25.8.1 while the project specifies Node 24.
+
+Remaining boundaries: no live agent execution, publish action, test-console data, or real run status; this is a workflow draft editor. The design is responsive, but drag-and-drop relies on pointer input; the explicit add controls are the accessible touch/keyboard alternative. This is not a full assistive-technology or end-to-end persistence audit.
+
+final result: passed for the requested draft playground scope.
+
+---
+
+# Dashboard visual QA — 2026-10-19
+
+Source visual truth: `dashboard-inside1.png` (Projects home), `dashboard-inside2.png`
+(creation dialog), and `dashboard-inside-project1.png` (project overview), supplied in
+`/Users/swatantragupta/Downloads/agentfactoryos:images/`. The implementation was
+compared at the browser's normal desktop width and a 390 × 844 mobile viewport.
+
+The Projects home now uses the reference's cream/forest editorial hierarchy, four-part
+usage strip, tighter project-card grid, and table-style recent history. Its empty state
+uses one creation action and does not fabricate sample projects. The project overview
+now has the top-corner paper/leaves treatment, tighter metric/panel rhythm and
+structured empty states. The creation dialog has a plan-capacity marker, connected
+step indicator, and full-width mobile layout with a footer fixed at the bottom of the
+step flow.
+
+Visual comparison findings:
+
+- [P1, fixed] The mobile dialog was rendered 38px narrower than the viewport because
+  of the browser's default dialog `max-width`; explicitly removed that constraint.
+- [P1, fixed] Short mobile wizard steps left the action footer floating above the
+  bottom edge; the dialog now uses a full-height flex layout with a scrollable body.
+- [P2, fixed] The earlier desktop Projects screen used three broad usage columns and
+  an oversized dashed empty state. The current treatment follows the reference's
+  denser four-column band and a contained, single-action first-project state.
+- [P2, fixed] The project overview's large blank panels were visually inert. They
+  now include clear, branded empty states without implying agents or runs exist.
+
+Functional browser check: a temporary local project was created through all four
+dialog steps, completed setup, and opened its project overview. The test record was
+then deleted by its exact ID, restoring the workspace to its original 0 of 5 projects.
+The mobile Projects card was measured at 358px within a 390px viewport; mobile bottom
+navigation and collapsed usage were present. Desktop project card, recent history,
+overview, and modal were visually inspected. Frontend TypeScript, targeted ESLint, and
+production build passed. The current runtime emits a Node engine warning because the
+project specifies Node 24 and the available Node version is 25.8.1.
+
+The reference screens contain populated agents, runs, reviews, and outcome charts.
+Those services are not yet implemented, so this pass intentionally shows true empty
+states and disabled agent/run actions. This is an image-guided visual improvement, not
+a claim of pixel-exact parity or release certification. Full assistive-technology and
+visual-regression audits remain open.
+
+final result: passed for the implemented project-dashboard UI scope, with operational
+data/services pending.
+
+---
+
+# Authentication rail artwork QA — 2026-10-18
+
+Source visual truth: `/Users/swatantragupta/Downloads/agentfactoryos:images/login-signup.png` (1983 × 793 board; first sign-up card is the comparison target). Implementation: `http://localhost:3000/signup`, with the same shared rail also checked on `/forgot-password`. Implementation screenshots were captured in the in-app browser during this task; the browser tool does not expose a persisted screenshot path. The desktop override requested 1440 × 900 CSS px and returned a 1107 × 692 capture; the default narrow view returned 319 × 614. Source and rendered frames have different surrounding canvas and card dimensions, so the rail was compared by proportions rather than claiming a density-normalized pixel diff. No DPR was reported by the capture tool.
+
+State: empty sign-up form, forest-green auth rail, no hover or error. Full-view comparison checked the rail's width, botanical placement and footer contrast in the context of the entire card. Focused-region review checked the paper edge, leaf scale, wordmark/tagline clearance and mobile top-rail crop. Source and implementation were opened in this task; no composite comparison image was saved.
+
+Findings and comparison history:
+
+- [P1, fixed] The initial mobile artwork crop left only a tiny leaf tip visible. A dedicated supplied transparent leaf asset is now placed in the mobile top rail, away from the wordmark.
+- [P2, fixed] The initial desktop crop put the collage too high and too small. The supplied paper-and-leaves artwork now follows the rail height, with the visible section concentrated below the message.
+- [P2, fixed] The image initially reduced footer contrast. A lower forest fade keeps the footer readable while retaining the torn-paper edge.
+
+Required fidelity surfaces: Playfair Display/Montserrat typography and auth copy were unchanged. The rail occupies roughly one third of the desktop card, matching the reference's proportion. Forest, cream and paper colors remain from the existing theme. Original supplied bitmap artwork is used without generated replacements; the desktop crop is an adaptation, not an exact pixel trace of the flattened board. Mobile retains the compact fixed-height auth header, so its foliage treatment intentionally differs from the desktop reference.
+
+Checks: desktop sign-up, desktop forgot-password and narrow sign-up inspected in the in-app browser; no console errors observed. Frontend formatting, lint, TypeScript, 16 tests and production build passed. The available Node version is 25.8.1 while the project declares Node 24, so the package manager emitted an engine warning.
+
+No actionable P0/P1/P2 mismatch remains for the requested rail-artwork scope. A saved normalized side-by-side pixel comparison and full screen-reader audit were not performed.
+
+final result: passed
+
+---
+
 # Landing-page QA — 2026-10-17
 
 ## Motion enhancement verification

@@ -21,9 +21,17 @@
   --af-white: #ffffff;
 
   /* Typography */
+  --af-font-brand: var(--font-playfair-display), Georgia, 'Times New Roman', serif;
   --af-font-display: var(--font-playfair-display), Georgia, 'Times New Roman', serif;
   --af-font-interface: var(--font-montserrat), Montserrat, ui-sans-serif, system-ui, sans-serif;
   --af-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Workspace text rhythm. Public pages keep their existing editorial spacing. */
+  --af-workspace-heading-gap: 0.375rem;
+  --af-workspace-section-gap: 0.75rem;
+  --af-workspace-copy-line: 1.55;
+  --af-workspace-caption-line: 1.45;
+  --af-workspace-copy-measure: 68ch;
 
   --af-display-xl-size: 4.5rem;
   --af-display-xl-line: 1;

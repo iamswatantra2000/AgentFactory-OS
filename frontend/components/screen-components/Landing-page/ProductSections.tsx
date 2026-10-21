@@ -8,7 +8,7 @@ import styles from './complete.module.css';
 export function PurposeSection() {
   return (
     <section id="purpose" className={styles.purpose} aria-labelledby="purpose-heading">
-      <div className={styles.intro} data-motion-reveal>
+      <div className={styles.intro} data-motion-reveal data-motion-copy>
         <p className={styles.eyebrow}>Why AgentFactory OS</p>
         <h2 id="purpose-heading">
           Your idea deserves
@@ -54,7 +54,7 @@ export function PurposeSection() {
 export function CompleteFooter() {
   return (
     <footer className={styles.footer}>
-      <div className={styles.footerSignature} data-motion-reveal>
+      <div className={styles.footerSignature} data-motion-reveal data-motion-copy>
         <p>
           Built for people.
           <br />

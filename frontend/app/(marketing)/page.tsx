@@ -13,5 +13,5 @@ export const metadata: Metadata = {
 export default async function MarketingHome() {
   const session = await getLandingSession((await cookies()).toString());
   if (session?.authenticated) redirect('/welcome');
-  return <LandingPage showEntrance={session?.authenticated === false} />;
+  return <LandingPage showEntrance />;
 }

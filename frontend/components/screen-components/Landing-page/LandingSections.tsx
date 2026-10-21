@@ -85,16 +85,18 @@ export function WorkflowSection() {
   return (
     <section id="workflow" className={styles.workflow} aria-labelledby="workflow-heading">
       <div className={styles.sectionInner}>
-        <p className={styles.eyebrow}>From an idea to a working structure</p>
-        <h2 id="workflow-heading">
-          A reliable path
-          <br />
-          from request to result.
-        </h2>
-        <p className={styles.sectionDescription}>
-          A company is more than a collection of agents. Design the roles, responsibilities, and
-          flow of work together—before you automate.
-        </p>
+        <div data-motion-reveal data-motion-copy>
+          <p className={styles.eyebrow}>From an idea to a working structure</p>
+          <h2 id="workflow-heading">
+            A reliable path
+            <br />
+            from request to result.
+          </h2>
+          <p className={styles.sectionDescription}>
+            A company is more than a collection of agents. Design the roles, responsibilities, and
+            flow of work together—before you automate.
+          </p>
+        </div>
         <ol className={styles.stages} data-motion-reveal data-motion-group>
           {stages.map(({ Icon, title, copy, tone }, index) => (
             <li key={title}>
@@ -117,6 +119,7 @@ export function WorkflowSection() {
       </div>
       <Image
         className={styles.workflowArt}
+        data-motion-parallax
         src="/images/brand/component2.png"
         width={2103}
         height={748}
@@ -133,7 +136,7 @@ export function WorkflowSection() {
 export function GovernanceSection() {
   return (
     <section id="governance" className={styles.governance} aria-labelledby="governance-heading">
-      <div className={styles.governanceCopy} data-motion-reveal>
+      <div className={styles.governanceCopy} data-motion-reveal data-motion-copy>
         <p className={styles.eyebrow}>Clarity before autonomy</p>
         <h2 id="governance-heading">
           A role is a responsibility.
@@ -149,7 +152,7 @@ export function GovernanceSection() {
           are not available in this release.
         </p>
       </div>
-      <aside className={styles.planCard} aria-labelledby="authority-heading">
+      <aside className={styles.planCard} aria-labelledby="authority-heading" data-motion-reveal>
         <p className={styles.eyebrow}>Built around your judgment</p>
         <h2 id="authority-heading">
           Clear boundaries.

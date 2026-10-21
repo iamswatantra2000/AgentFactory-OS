@@ -2,13 +2,20 @@
 
 - `LandingMotion` is a client enhancement around server-rendered content. GSAP is
   dynamically imported; content is never hidden in anticipation of animation loading.
-- Explicit `data-motion-reveal` targets animate once when entering the viewport.
-  `data-motion-group` staggers direct children. Do not nest reveal targets.
-- Already-visible content and restored/deep-link positions are not animated again.
+- Explicit `data-motion-reveal` targets animate once as they enter the lower 88% of
+  the viewport. `data-motion-copy` sequences direct editorial children; `data-motion-group`
+  staggers direct cards or steps. Do not nest reveal targets.
+- Below-fold targets are prepared only after GSAP and ScrollTrigger load. Already-visible
+  content, deep links, and restored positions remain visible. A failed animation chunk
+  leaves the original server-rendered HTML intact.
+- Desktop-only `data-motion-parallax` shifts decorative artwork by 32px across its
+  section. No content, form control, or navigation is tied to scroll progress.
 - Motion uses short transform/opacity tweens, not layout dimensions, scroll hijacking,
-  autoplay loops, or pointer-following effects. Hover transforms are fine-pointer only.
-- GSAP matchMedia reverts active animations when reduced motion is enabled. Unmount
-  disconnects observers, removes focus listeners, and reverts the scoped context.
+  autoplay loops, or pointer-following effects. Mobile reveals are shorter and tighter;
+  hover transforms remain fine-pointer only.
+- GSAP matchMedia reconfigures motion across the mobile breakpoint and reverts it
+  when reduced motion is enabled. Unmount kills scroll triggers, removes focus
+  listeners, and reverts the scoped context.
 - Keyboard focus completes any active reveal immediately. Navigation, forms, and
   dialogs are independent of motion. Decoration has no accessibility-tree content.
 - Entrance branding is decorative CSS with a 1.4-second finite lifetime; reduced-motion

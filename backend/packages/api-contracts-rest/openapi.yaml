@@ -48,7 +48,7 @@ paths:
   /api/v1/auth/signup:
     post:
       operationId: signUp
-      description: Creates an owner account, workspace, and server-side session.
+      description: Creates an owner account and workspace, then sends email verification. Does not create a session.
       requestBody:
         required: true
         content:
@@ -70,15 +70,18 @@ paths:
                   maxLength: 128
       responses:
         '201':
-          description: Account created. Sets an HttpOnly af_session cookie.
-          headers:
-            Set-Cookie:
-              schema:
-                type: string
+          description: Account created; verification email sent.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthSuccess'
+                type: object
+                required: [requiresVerification, email]
+                properties:
+                  requiresVerification:
+                    const: true
+                  email:
+                    type: string
+                    format: email
         '400':
           $ref: '#/components/responses/ProblemResponse'
         '409':
@@ -116,7 +119,107 @@ paths:
           $ref: '#/components/responses/ProblemResponse'
         '401':
           $ref: '#/components/responses/ProblemResponse'
+        '403':
+          $ref: '#/components/responses/ProblemResponse'
         '503':
+          $ref: '#/components/responses/ProblemResponse'
+  /api/v1/auth/verify-email:
+    post:
+      operationId: verifyEmail
+      description: Consumes a one-time verification token and creates a browser session.
+      requestBody:
+        $ref: '#/components/requestBodies/Token'
+      responses:
+        '200':
+          description: Email verified. Sets the HttpOnly session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSuccess'
+        '400':
+          $ref: '#/components/responses/ProblemResponse'
+  /api/v1/auth/resend-verification:
+    post:
+      operationId: resendVerification
+      description: Generic response avoids revealing whether the account exists.
+      requestBody:
+        $ref: '#/components/requestBodies/Email'
+      responses:
+        '202':
+          description: Request accepted.
+  /api/v1/auth/request-reset:
+    post:
+      operationId: requestPasswordReset
+      description: Generic response avoids revealing whether the account exists.
+      requestBody:
+        $ref: '#/components/requestBodies/Email'
+      responses:
+        '202':
+          description: Request accepted.
+  /api/v1/auth/reset-password:
+    post:
+      operationId: resetPassword
+      description: Consumes a one-time reset token and revokes all existing sessions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, password]
+              properties:
+                token:
+                  type: string
+                  pattern: '^[0-9a-f]{64}$'
+                password:
+                  type: string
+                  minLength: 12
+                  maxLength: 128
+      responses:
+        '204':
+          description: Password reset completed.
+        '400':
+          $ref: '#/components/responses/ProblemResponse'
+  /api/v1/auth/oauth/providers:
+    get:
+      operationId: getOAuthProviders
+      responses:
+        '200':
+          description: Configured provider availability.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [google, microsoft, apple]
+                properties:
+                  google: { type: boolean }
+                  microsoft: { type: boolean }
+                  apple: { type: boolean }
+  /api/v1/auth/oauth/{provider}/start:
+    post:
+      operationId: startOAuth
+      parameters:
+        - $ref: '#/components/parameters/OAuthProvider'
+      responses:
+        '200':
+          description: Authorization URL and random state.
+        '503':
+          $ref: '#/components/responses/ProblemResponse'
+  /api/v1/auth/oauth/{provider}/complete:
+    post:
+      operationId: completeOAuth
+      parameters:
+        - $ref: '#/components/parameters/OAuthProvider'
+      responses:
+        '200':
+          description: Social identity verified and session cookie set.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSuccess'
+        '400':
+          $ref: '#/components/responses/ProblemResponse'
+        '409':
           $ref: '#/components/responses/ProblemResponse'
   /api/v1/auth/logout:
     post:
@@ -128,7 +231,236 @@ paths:
           description: Session revoked and cookie cleared.
         '503':
           $ref: '#/components/responses/ProblemResponse'
+  /api/v1/workspace/members:
+    get:
+      operationId: listWorkspaceMembers
+      security:
+        - sessionCookie: []
+      responses:
+        '200':
+          description: Members available for project assignment
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [members]
+                properties:
+                  members:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WorkspaceMember'
+        '401':
+          $ref: '#/components/responses/ProblemResponse'
+  /api/v1/projects:
+    get:
+      operationId: listProjects
+      description: Returns only projects accessible to the current member. Archived projects are included for client-side filtering.
+      security:
+        - sessionCookie: []
+      responses:
+        '200':
+          description: Projects and development-plan usage
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectList'
+        '401':
+          $ref: '#/components/responses/ProblemResponse'
+    post:
+      operationId: createProject
+      description: Creates a project in preparing state after validating workspace membership and the project limit.
+      security:
+        - sessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProject'
+      responses:
+        '201':
+          description: Preparing project
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400':
+          $ref: '#/components/responses/ProblemResponse'
+        '409':
+          $ref: '#/components/responses/ProblemResponse'
+  /api/v1/projects/{projectId}:
+    get:
+      operationId: getProject
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: Project visible to the current member
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '404':
+          description: Missing or inaccessible project
+  /api/v1/projects/{projectId}/graph:
+    get:
+      operationId: getProjectGraph
+      description: Returns the project-scoped Visual Factory draft. Only project members can read it.
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: Saved workflow graph and its revision
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectGraphDocument'
+        '404':
+          description: Missing or inaccessible project
+    post:
+      operationId: saveProjectGraph
+      description: Saves the project draft with optimistic revision checking. Does not run or publish the workflow. Requires an active project and Owner or Admin role.
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [graph, expectedUpdatedAt]
+              properties:
+                graph:
+                  $ref: '#/components/schemas/WorkflowGraph'
+                expectedUpdatedAt:
+                  type: [string, 'null']
+                  format: date-time
+      responses:
+        '200':
+          description: Saved draft and its new revision
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectGraphDocument'
+        '400':
+          $ref: '#/components/responses/ProblemResponse'
+        '403':
+          $ref: '#/components/responses/ProblemResponse'
+        '409':
+          description: Project is not active or the draft was changed in another tab
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /api/v1/projects/{projectId}/open:
+    post:
+      operationId: openProject
+      description: Records last-opened time for an accessible project.
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: Opened project
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+  /api/v1/projects/{projectId}/complete-setup:
+    post:
+      operationId: completeProjectSetup
+      description: Creates a usable project document shell and activates the project. Owner or Admin only.
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: Active project
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '403':
+          $ref: '#/components/responses/ProblemResponse'
+        '409':
+          $ref: '#/components/responses/ProblemResponse'
+  /api/v1/projects/{projectId}/state:
+    post:
+      operationId: changeProjectState
+      description: Pauses, archives, resumes, or restores a project. Owner or Admin only. Restores respect plan capacity.
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [active, paused, archived]
+      responses:
+        '200':
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '403':
+          $ref: '#/components/responses/ProblemResponse'
+        '409':
+          $ref: '#/components/responses/ProblemResponse'
 components:
+  parameters:
+    ProjectId:
+      name: projectId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    OAuthProvider:
+      name: provider
+      in: path
+      required: true
+      schema:
+        type: string
+        enum: [google, microsoft, apple]
+  requestBodies:
+    Email:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [email]
+            properties:
+              email:
+                type: string
+                format: email
+    Token:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [token]
+            properties:
+              token:
+                type: string
+                pattern: '^[0-9a-f]{64}$'
   securitySchemes:
     sessionCookie:
       type: apiKey
@@ -142,6 +474,134 @@ components:
           schema:
             $ref: '#/components/schemas/Problem'
   schemas:
+    WorkflowGraph:
+      type: object
+      required: [nodes, edges]
+      properties:
+        nodes:
+          type: array
+          maxItems: 80
+          items:
+            type: object
+            required: [id, kind, label, description, x, y]
+            properties:
+              id: { type: string, format: uuid }
+              kind: { type: string, enum: [trigger, agent, handoff, review, output] }
+              roleKey: { type: string, maxLength: 80 }
+              branchMode:
+                type: string
+                enum: [sequential, parallel]
+                description: Whether outgoing forward routes are dispatched in order or together.
+              recipientType: { type: string, enum: [person, agent] }
+              recipientName: { type: string, maxLength: 100 }
+              modelConfig:
+                type: object
+                required: [provider, modelId, effort]
+                description: Design-time model choice for this step; saving a graph does not execute the model.
+                properties:
+                  provider: { type: string, enum: [anthropic, openai, google] }
+                  modelId: { type: string, minLength: 1, maxLength: 100 }
+                  effort: { type: string, enum: [low, medium, high] }
+              label: { type: string, minLength: 1, maxLength: 100 }
+              description: { type: string, maxLength: 500 }
+              x: { type: number, minimum: -100000, maximum: 100000 }
+              y: { type: number, minimum: -100000, maximum: 100000 }
+        edges:
+          type: array
+          maxItems: 160
+          items:
+            type: object
+            required: [id, source, target]
+            properties:
+              id: { type: string, format: uuid }
+              source: { type: string, format: uuid }
+              target: { type: string, format: uuid }
+              kind:
+                type: string
+                enum: [forward, feedback]
+                description: Feedback routes return to an upstream step for a bounded review conversation.
+              label: { type: string, maxLength: 120 }
+              maxRounds:
+                type: integer
+                minimum: 1
+                maximum: 5
+                description: Maximum review rounds for a feedback route; design metadata only.
+              order:
+                type: integer
+                minimum: 1
+                maximum: 160
+                description: Order among a source node's forward routes when its branchMode is sequential.
+    ProjectGraphDocument:
+      type: object
+      required: [graph, updatedAt]
+      properties:
+        graph:
+          $ref: '#/components/schemas/WorkflowGraph'
+        updatedAt:
+          type: [string, 'null']
+          format: date-time
+    WorkspaceMember:
+      type: object
+      required: [id, email]
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        name: { type: [string, 'null'] }
+    Project:
+      type: object
+      required:
+        [id, workspaceId, name, startingPoint, status, createdAt, updatedAt, role, memberIds]
+      properties:
+        id: { type: string, format: uuid }
+        workspaceId: { type: string, format: uuid }
+        ownerId: { type: [string, 'null'], format: uuid }
+        name: { type: string }
+        outcome: { type: [string, 'null'] }
+        teamName: { type: [string, 'null'] }
+        startingPoint: { type: string, enum: [blank, template] }
+        templateKey: { type: [string, 'null'] }
+        status: { type: string, enum: [preparing, active, paused, archived] }
+        role: { type: string, enum: [owner, admin, member] }
+        memberIds:
+          type: array
+          items: { type: string, format: uuid }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        lastOpenedAt: { type: [string, 'null'], format: date-time }
+    ProjectList:
+      type: object
+      required: [projects, plan]
+      properties:
+        projects:
+          type: array
+          items:
+            $ref: '#/components/schemas/Project'
+        plan:
+          type: object
+          required: [name, projectLimit, projectCount]
+          properties:
+            name: { type: string }
+            projectLimit: { type: integer, minimum: 1 }
+            projectCount: { type: integer, minimum: 0 }
+    CreateProject:
+      type: object
+      required: [name, outcome, ownerId, teamName, startingPoint, members]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 120 }
+        outcome: { type: string, minLength: 10, maxLength: 1000 }
+        ownerId: { type: string, format: uuid }
+        teamName: { type: string, minLength: 1, maxLength: 120 }
+        startingPoint: { type: string, enum: [blank, template] }
+        templateKey: { type: string, enum: [customer-insights, campaign-operations] }
+        members:
+          type: array
+          maxItems: 50
+          items:
+            type: object
+            required: [userId, role]
+            properties:
+              userId: { type: string, format: uuid }
+              role: { type: string, enum: [admin, member] }
     SessionUser:
       type: object
       required: [id, email, name, workspaceId]

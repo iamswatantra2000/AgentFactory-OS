@@ -13,7 +13,17 @@ describe('landing entrance session decision', () => {
   });
 
   it('skips signed-in visitors and forwards cookies without caching', async () => {
-    const request = vi.fn().mockResolvedValue(Response.json({ authenticated: true }));
+    const request = vi.fn().mockResolvedValue(
+      Response.json({
+        authenticated: true,
+        user: {
+          id: 'b36d99d5-c741-4785-9ca4-8c88209d81a7',
+          email: 'agent@example.test',
+          name: 'Agent',
+          workspaceId: 'f5e80343-542f-465f-82e8-3b3fc608ec4e',
+        },
+      }),
+    );
     vi.stubGlobal('fetch', request);
     expect(await shouldShowLandingEntrance('session=test-only')).toBe(false);
     expect(request).toHaveBeenCalledWith(
@@ -27,21 +37,21 @@ describe('landing entrance session decision', () => {
   });
 
   it.each([{}, null, { authenticated: 'false' }])(
-    'skips invalid session responses: %j',
+    'shows the public entrance for invalid session responses: %j',
     async (value) => {
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue(Response.json(value)));
-      expect(await shouldShowLandingEntrance('')).toBe(false);
+      expect(await shouldShowLandingEntrance('')).toBe(true);
     },
   );
 
-  it('skips failed responses', async () => {
+  it('shows the public entrance after failed responses', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 503 })));
-    expect(await shouldShowLandingEntrance('')).toBe(false);
+    expect(await shouldShowLandingEntrance('')).toBe(true);
   });
 
-  it('skips network failures and timeouts', async () => {
+  it('shows the public entrance after network failures and timeouts', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('timeout')));
-    expect(await shouldShowLandingEntrance('')).toBe(false);
+    expect(await shouldShowLandingEntrance('')).toBe(true);
   });
 });
 
