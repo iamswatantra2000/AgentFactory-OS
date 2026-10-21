@@ -2,9 +2,13 @@ import { createHash, randomUUID } from 'node:crypto';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@as-integrations/express5';
 import cors from 'cors';
-import express, { type NextFunction, type Request, type Response } from 'express';
-import helmet from 'helmet';
-import pinoHttp from 'pino-http';
+import express, {
+  type NextFunction,
+  type Request,
+  type Response as ExpressResponse,
+} from 'express';
+import * as helmetModule from 'helmet';
+import { pinoHttp } from 'pino-http';
 import { z } from 'zod';
 import { createLogger } from '@agentfactory/observability';
 import type { loadConfig } from './config.js';
@@ -18,7 +22,7 @@ const authWindowMs = 15 * 60 * 1000;
 
 function authLimiter() {
   const attempts = new Map<string, { count: number; resetAt: number }>();
-  return (request: Request, response: Response, next: NextFunction) => {
+  return (request: Request, response: ExpressResponse, next: NextFunction) => {
     const limits: Record<string, number> = {
       '/login': 10,
       '/signup': 5,
@@ -60,7 +64,7 @@ function browserSession(request: Request) {
   return token && /^[0-9a-f]{64}$/.test(token) ? token : null;
 }
 
-function identityProblem(response: Response, status: number, title: string) {
+function identityProblem(response: ExpressResponse, status: number, title: string) {
   return response
     .status(status)
     .type('application/problem+json')
@@ -107,7 +111,12 @@ async function projectActor(config: Config, request: Request) {
   return parsed.success ? { ...parsed.data.user, token } : null;
 }
 
-async function proxyProject(config: Config, request: Request, response: Response, path: string) {
+async function proxyProject(
+  config: Config,
+  request: Request,
+  response: ExpressResponse,
+  path: string,
+) {
   response.setHeader('Cache-Control', 'no-store');
   const origin = request.header('origin');
   if (origin && !config.allowedOrigins.includes(origin))
@@ -166,7 +175,7 @@ export async function createApp(config: Config) {
   const logger = createLogger('api-gateway');
   const app = express();
   app.disable('x-powered-by');
-  app.use(helmet());
+  app.use(helmetModule.default());
   app.use(
     pinoHttp({
       logger,
@@ -442,7 +451,7 @@ export async function createApp(config: Config) {
     }),
   );
 
-  app.use((error: unknown, request: Request, response: Response, _next: NextFunction) => {
+  app.use((error: unknown, request: Request, response: ExpressResponse, _next: NextFunction) => {
     request.log.error({ err: error }, 'Unhandled request error');
     response.status(500).type('application/problem+json').json({
       type: 'https://agentfactory.local/problems/internal-error',
