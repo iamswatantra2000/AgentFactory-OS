@@ -11,8 +11,8 @@ import express, {
 import * as helmetModule from 'helmet';
 import { pinoHttp } from 'pino-http';
 import { z } from 'zod';
-import { createLogger } from '@agentfactory/observability';
 import type { loadConfig } from './config.js';
+import { createLogger } from './logger.js';
 
 type Config = ReturnType<typeof loadConfig>;
 

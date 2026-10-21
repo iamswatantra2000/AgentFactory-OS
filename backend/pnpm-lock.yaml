@@ -63,9 +63,6 @@ importers:
 
   services/api-gateway:
     dependencies:
-      '@agentfactory/observability':
-        specifier: workspace:*
-        version: link:../../packages/observability
       '@apollo/server':
         specifier: 5.5.1
         version: 5.5.1(graphql@16.14.2)
@@ -84,6 +81,9 @@ importers:
       helmet:
         specifier: 8.3.0
         version: 8.3.0
+      pino:
+        specifier: 10.4.0
+        version: 10.4.0
       pino-http:
         specifier: 11.0.0
         version: 11.0.0
