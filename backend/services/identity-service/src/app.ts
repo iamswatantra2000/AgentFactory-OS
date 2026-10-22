@@ -112,7 +112,7 @@ export function createApp(
     const parsed = registerSchema.safeParse(request.body);
     if (!parsed.success || !parsed.data.email) return problem(response, 400, 'Invalid account details');
     try {
-      const account = await repository.register(parsed.data);
+      const account = await repository.register({ ...parsed.data, email: parsed.data.email });
       try {
         await services.mail.verification(account.email, account.verificationToken);
       } catch {
@@ -134,7 +134,7 @@ export function createApp(
     const parsed = loginSchema.safeParse(request.body);
     if (!parsed.success || !parsed.data.email) return problem(response, 400, 'Invalid sign-in details');
     try {
-      return response.json(await repository.login(parsed.data));
+      return response.json(await repository.login({ ...parsed.data, email: parsed.data.email }));
     } catch (error) {
       if (error instanceof InvalidCredentialsError)
         return problem(response, 401, 'Invalid email or password');
