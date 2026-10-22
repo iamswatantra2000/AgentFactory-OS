@@ -110,7 +110,7 @@ export function createApp(
 
   app.post('/v1/auth/register', async (request, response) => {
     const parsed = registerSchema.safeParse(request.body);
-    if (!parsed.success) return problem(response, 400, 'Invalid account details');
+    if (!parsed.success || !parsed.data.email) return problem(response, 400, 'Invalid account details');
     try {
       const account = await repository.register(parsed.data);
       try {
@@ -132,7 +132,7 @@ export function createApp(
 
   app.post('/v1/auth/login', async (request, response) => {
     const parsed = loginSchema.safeParse(request.body);
-    if (!parsed.success) return problem(response, 400, 'Invalid sign-in details');
+    if (!parsed.success || !parsed.data.email) return problem(response, 400, 'Invalid sign-in details');
     try {
       return response.json(await repository.login(parsed.data));
     } catch (error) {
