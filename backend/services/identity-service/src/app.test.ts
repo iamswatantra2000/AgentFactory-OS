@@ -14,13 +14,18 @@ afterEach(async () => {
   );
 });
 
-async function start(repository: Partial<IdentityRepository>, mail: Partial<AuthMail> = {}) {
+async function start(
+  repository: Partial<IdentityRepository>,
+  mail: Partial<AuthMail> = {},
+  internalToken?: string,
+) {
   const oauth = {
     available: () => ({ google: false, microsoft: false, apple: false }),
   } as OAuthService;
   const app = createApp(repository as IdentityRepository, {
     mail: mail as AuthMail,
     oauth,
+    internalToken,
   });
   const server = app.listen(0, '127.0.0.1');
   servers.push(server);
@@ -30,15 +35,35 @@ async function start(repository: Partial<IdentityRepository>, mail: Partial<Auth
   return `http://127.0.0.1:${address.port}`;
 }
 
-async function post(base: string, path: string, body: unknown) {
+async function post(base: string, path: string, body: unknown, internalToken?: string) {
   return fetch(`${base}${path}`, {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers: {
+      'content-type': 'application/json',
+      ...(internalToken ? { 'x-af-internal-token': internalToken } : {}),
+    },
     body: JSON.stringify(body),
   });
 }
 
 describe('identity HTTP flow', () => {
+  it('requires the gateway token when deployed as a private service', async () => {
+    const token = 'a-private-service-token';
+    const login = vi.fn(async () => ({
+      token: 'a'.repeat(64),
+      user: {
+        id: '11111111-1111-4111-8111-111111111111',
+        email: 'ada@example.com',
+        name: 'Ada',
+        workspaceId: '22222222-2222-4222-8222-222222222222',
+      },
+    }));
+    const base = await start({ login }, {}, token);
+    const body = { email: 'ada@example.com', password: 'a-long-password' };
+    expect((await post(base, '/v1/auth/login', body)).status).toBe(403);
+    expect((await post(base, '/v1/auth/login', body, token)).status).toBe(200);
+    expect(login).toHaveBeenCalledOnce();
+  });
   it('creates an unverified account and sends a link without exposing its token', async () => {
     const verification = vi.fn(async () => {});
     const base = await start(

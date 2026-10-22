@@ -7,4 +7,9 @@ describe('gateway configuration', () => {
       'Invalid gateway configuration',
     );
   });
+  it('requires a private identity token in production', () => {
+    expect(() => loadConfig({ NODE_ENV: 'production' })).toThrow(
+      'Configure IDENTITY_SERVICE_INTERNAL_TOKEN',
+    );
+  });
 });

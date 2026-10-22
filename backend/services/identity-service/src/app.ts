@@ -1,8 +1,14 @@
-import express, { type NextFunction, type Request, type Response } from 'express';
-import helmet from 'helmet';
-import pinoHttp from 'pino-http';
+import { timingSafeEqual } from 'node:crypto';
+import express, {
+  type NextFunction,
+  type Request,
+  type RequestHandler,
+  type Response,
+} from 'express';
+import * as helmetModule from 'helmet';
+import { pinoHttp } from 'pino-http';
 import { z } from 'zod';
-import { createLogger } from '@agentfactory/observability';
+import { createLogger } from './logger.js';
 import {
   DuplicateAccountError,
   EmailNotVerifiedError,
@@ -13,6 +19,9 @@ import {
   type IdentityRepository,
 } from './repository.js';
 import type { AuthMail } from './mailer.js';
+import { createAuthMail } from './mailer.js';
+import { createOAuthService } from './oauth.js';
+import { createIdentityRepository } from './repository.js';
 import {
   oauthProviders,
   OAuthProviderError,
@@ -35,6 +44,7 @@ const oauthCompleteSchema = z.object({
   code: z.string().min(1).max(4096),
   state: z.string().regex(/^[0-9a-f]{64}$/),
 });
+const helmet = helmetModule.default as unknown as () => RequestHandler;
 
 function bearer(request: Request) {
   const match = /^Bearer ([0-9a-f]{64})$/.exec(request.header('authorization') ?? '');
@@ -51,7 +61,7 @@ function problem(response: Response, status: number, title: string) {
 
 export function createApp(
   repository: IdentityRepository,
-  services: { mail: AuthMail; oauth: OAuthService },
+  services: { mail: AuthMail; oauth: OAuthService; internalToken?: string },
 ) {
   const logger = createLogger('identity-service');
   const app = express();
@@ -70,6 +80,17 @@ export function createApp(
     response.setHeader('Cache-Control', 'no-store');
     next();
   });
+
+  if (services.internalToken) {
+    app.use('/v1', (request, response, next) => {
+      const provided = Buffer.from(request.header('x-af-internal-token') ?? '');
+      const expected = Buffer.from(services.internalToken!);
+      if (provided.length !== expected.length || !timingSafeEqual(provided, expected)) {
+        return problem(response, 403, 'Service access denied');
+      }
+      next();
+    });
+  }
 
   app.get('/health/live', (_request, response) =>
     response.json({ name: 'identity-service', status: 'ok', timestamp: new Date().toISOString() }),
@@ -245,4 +266,42 @@ export function createApp(
     problem(response, 500, 'Identity service error');
   });
   return app;
+}
+
+let vercelApp: ReturnType<typeof createApp> | undefined;
+
+export default function handler(request: Request, response: Response) {
+  if (!vercelApp) {
+    const config = z
+      .object({
+        IDENTITY_DATABASE_URL: z.url(),
+        IDENTITY_SERVICE_INTERNAL_TOKEN: z.string().min(16),
+        APP_BASE_URL: z.url(),
+        MAIL_HOST: z.string().default('localhost'),
+        MAIL_PORT: z.coerce.number().int().default(1025),
+        MAIL_SECURE: z.enum(['true', 'false']).default('false'),
+        MAIL_FROM: z.string().default('AgentFactory OS <hello@agentfactory.local>'),
+        MAIL_USER: z.string().optional(),
+        MAIL_PASSWORD: z.string().optional(),
+      })
+      .parse({
+        ...process.env,
+        IDENTITY_DATABASE_URL: process.env.IDENTITY_DATABASE_URL ?? process.env.DATABASE_URL,
+      });
+    const repository = createIdentityRepository(config.IDENTITY_DATABASE_URL);
+    vercelApp = createApp(repository, {
+      internalToken: config.IDENTITY_SERVICE_INTERNAL_TOKEN,
+      mail: createAuthMail({
+        host: config.MAIL_HOST,
+        port: config.MAIL_PORT,
+        secure: config.MAIL_SECURE === 'true',
+        from: config.MAIL_FROM,
+        appBaseUrl: config.APP_BASE_URL,
+        user: config.MAIL_USER,
+        password: config.MAIL_PASSWORD,
+      }),
+      oauth: createOAuthService(repository),
+    });
+  }
+  vercelApp(request, response);
 }

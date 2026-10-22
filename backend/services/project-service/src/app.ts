@@ -1,17 +1,20 @@
 import { timingSafeEqual } from 'node:crypto';
-import express, { type Request, type Response } from 'express';
-import helmet from 'helmet';
-import pinoHttp from 'pino-http';
+import { Pool } from 'pg';
+import express, { type Request, type RequestHandler, type Response } from 'express';
+import * as helmetModule from 'helmet';
+import { pinoHttp } from 'pino-http';
 import { z } from 'zod';
-import { createLogger } from '@agentfactory/observability';
+import { createLogger } from './logger.js';
 import {
   ProjectConflictError,
   ProjectForbiddenError,
   ProjectLimitError,
   ProjectNotFoundError,
+  ProjectRepository,
   ProjectRevisionConflictError,
-  type ProjectRepository,
 } from './repository.js';
+
+const helmet = helmetModule.default as unknown as () => RequestHandler;
 
 const uuid = z.uuid();
 const graphSchema = z
@@ -318,4 +321,27 @@ export function createApp(repository: ProjectRepository, internalToken: string) 
     return problem(response, 500, 'Project service error');
   });
   return app;
+}
+
+let vercelApp: ReturnType<typeof createApp> | undefined;
+
+export default function handler(request: Request, response: Response) {
+  if (!vercelApp) {
+    const config = z
+      .object({
+        PROJECT_DATABASE_URL: z.url(),
+        PROJECT_SERVICE_INTERNAL_TOKEN: z.string().min(16),
+        PROJECT_LIMIT: z.coerce.number().int().min(1).max(1000).default(5),
+      })
+      .parse({
+        ...process.env,
+        PROJECT_DATABASE_URL: process.env.PROJECT_DATABASE_URL ?? process.env.DATABASE_URL,
+      });
+    const pool = new Pool({ connectionString: config.PROJECT_DATABASE_URL, max: 2 });
+    vercelApp = createApp(
+      new ProjectRepository(pool, config.PROJECT_LIMIT),
+      config.PROJECT_SERVICE_INTERNAL_TOKEN,
+    );
+  }
+  vercelApp(request, response);
 }

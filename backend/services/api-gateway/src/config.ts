@@ -6,6 +6,7 @@ const configSchema = z.object({
   PROJECT_SERVICE_URL: z.url().default('http://localhost:4003'),
   PROJECT_SERVICE_INTERNAL_TOKEN: z.string().min(16).default('local-development-only-token'),
   IDENTITY_SERVICE_URL: z.url().default('http://localhost:4001'),
+  IDENTITY_SERVICE_INTERNAL_TOKEN: z.string().min(16).optional(),
   ALLOWED_ORIGINS: z.string().default('http://localhost:3000'),
 });
 
@@ -13,6 +14,15 @@ export function loadConfig(input: NodeJS.ProcessEnv = process.env) {
   const result = configSchema.safeParse(input);
   if (!result.success) {
     throw new Error(`Invalid gateway configuration: ${z.prettifyError(result.error)}`);
+  }
+  if (result.data.NODE_ENV === 'production' && !result.data.IDENTITY_SERVICE_INTERNAL_TOKEN) {
+    throw new Error('Configure IDENTITY_SERVICE_INTERNAL_TOKEN in production');
+  }
+  if (
+    result.data.NODE_ENV === 'production' &&
+    result.data.PROJECT_SERVICE_INTERNAL_TOKEN === 'local-development-only-token'
+  ) {
+    throw new Error('Configure PROJECT_SERVICE_INTERNAL_TOKEN in production');
   }
   return {
     ...result.data,

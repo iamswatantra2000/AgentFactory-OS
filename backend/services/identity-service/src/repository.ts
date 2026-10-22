@@ -371,5 +371,7 @@ export class IdentityRepository {
 }
 
 export function createIdentityRepository(databaseUrl: string) {
-  return new IdentityRepository(new Pool({ connectionString: databaseUrl, max: 10 }));
+  return new IdentityRepository(
+    new Pool({ connectionString: databaseUrl, max: process.env.VERCEL ? 2 : 10 }),
+  );
 }

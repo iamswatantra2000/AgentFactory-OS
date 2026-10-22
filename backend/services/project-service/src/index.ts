@@ -2,7 +2,7 @@ import { createServer } from 'node:http';
 import { loadEnvFile } from 'node:process';
 import { Pool } from 'pg';
 import { z } from 'zod';
-import { createLogger } from '@agentfactory/observability';
+import { createLogger } from './logger.js';
 import { createApp } from './app.js';
 import { ProjectRepository } from './repository.js';
 

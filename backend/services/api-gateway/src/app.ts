@@ -92,6 +92,9 @@ async function identityRequest(
     headers: {
       ...(options.body ? { 'content-type': 'application/json' } : {}),
       ...(options.token ? { authorization: `Bearer ${options.token}` } : {}),
+      ...(config.IDENTITY_SERVICE_INTERNAL_TOKEN
+        ? { 'x-af-internal-token': config.IDENTITY_SERVICE_INTERNAL_TOKEN }
+        : {}),
     },
     body: options.body ? JSON.stringify(options.body) : undefined,
     cache: 'no-store',
