@@ -10,7 +10,7 @@ export async function forwardProjectRequest(request: Request, path: string) {
     if (!request.headers.get('content-type')?.startsWith('application/json'))
       return Response.json({ title: 'Expected JSON' }, { status: 415 });
     body = await request.text();
-    if (body.length > (path.endsWith('/graph') ? 131_072 : 16_384))
+    if (body.length > (path.endsWith('/graph') ? 786_432 : 16_384))
       return Response.json({ title: 'Request too large' }, { status: 413 });
   }
   try {

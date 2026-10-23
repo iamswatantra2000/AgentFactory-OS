@@ -5,10 +5,12 @@ import {
   detourPath,
   edgeNeedsDetour,
   ensureBusinessStart,
+  factoryRoutePath,
   moveOutgoingRoute,
   normalizeGraph,
   orderedNodes,
   outgoingForwardEdges,
+  planFactoryRoutes,
   stageNumbers,
   workflowChecks,
   type Graph,
@@ -227,6 +229,49 @@ describe('workflow graph', () => {
     const path = detourPath(584, 159, 940, 159, 'horizontal', 0);
     expect(path.labelY).toBeLessThan(64);
     expect(path.path).toContain(` ${path.labelY}`);
+  });
+  it('draws distinct branch corridors and directional return routes', () => {
+    const routed: Graph = {
+      nodes: ['Brief', 'Romy', 'Simmy', 'Review', 'Output'].map((label, index) => ({
+        id: String(index),
+        kind: index === 0 ? ('trigger' as const) : ('agent' as const),
+        label,
+        description: '',
+        x: 64 + index * 292,
+        y: 144,
+      })),
+      edges: [
+        { id: 'one', source: '0', target: '1' },
+        { id: 'two', source: '1', target: '2' },
+        { id: 'branch-a', source: '1', target: '3' },
+        { id: 'branch-b', source: '1', target: '4' },
+        { id: 'return', source: '3', target: '1', kind: 'feedback' },
+      ],
+    };
+    const plans = planFactoryRoutes(routed, 'horizontal');
+    expect(plans.get('two')?.kind).toBe('direct');
+    expect(plans.get('branch-a')?.kind).toBe('detour');
+    expect(plans.get('branch-b')?.kind).toBe('detour');
+    expect(plans.get('branch-a')?.corridor).not.toBe(plans.get('branch-b')?.corridor);
+    expect(plans.get('return')?.kind).toBe('feedback');
+    expect(plans.get('return')!.corridor).toBeLessThan(144);
+    const branch = factoryRoutePath(584, 204, 940, 204, plans.get('branch-a')!);
+    const feedback = factoryRoutePath(1020, 144, 470, 144, plans.get('return')!);
+    expect(branch.path).toContain(`${branch.labelY}`);
+    expect(branch.path).toMatch(/^M 584 204/);
+    expect(feedback.path).toMatch(/^M 1020 144/);
+    expect(feedback.path).toContain('L 470 144');
+  });
+  it('detours a manually moved forward step that sits behind its source', () => {
+    const moved: Graph = {
+      nodes: [
+        { id: 'first', kind: 'agent', label: 'First', description: '', x: 500, y: 64 },
+        { id: 'second', kind: 'agent', label: 'Second', description: '', x: 64, y: 64 },
+      ],
+      edges: [{ id: 'route', source: 'first', target: 'second' }],
+    };
+    expect(edgeNeedsDetour(moved, moved.edges[0]!, 'horizontal')).toBe(true);
+    expect(planFactoryRoutes(moved, 'horizontal').get('route')?.kind).toBe('detour');
   });
   it('persists and reorders sequential branches without changing their targets', () => {
     const routes: Graph = {

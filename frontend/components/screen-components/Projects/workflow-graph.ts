@@ -34,6 +34,12 @@ export type GraphEdge = {
 };
 export type Graph = { nodes: GraphNode[]; edges: GraphEdge[] };
 export type LayoutDirection = 'horizontal' | 'vertical';
+export type RouteSide = 'upper' | 'lower';
+export type RoutePlan = {
+  direction: LayoutDirection;
+  kind: 'direct' | 'detour' | 'feedback';
+  corridor?: number;
+};
 export const NODE_WIDTH = 228;
 export const NODE_HEIGHT = 190;
 export const NODE_LIMIT = 80;
@@ -137,8 +143,10 @@ export function normalizeGraph(value: unknown): Graph {
 /** Upgrade older drafts without losing their agents, routes, or the user's written text. */
 export function ensureBusinessStart(graph: Graph, idFactory: () => string): Graph {
   const starts = graph.nodes.filter((node) => node.kind === 'trigger');
-  const reusable = starts.find((node) =>
-    /^(trigger|business (brief|model|context|start))$/i.test(node.label.trim()),
+  const reusable = starts.find(
+    (node) =>
+      /^(trigger|business (brief|model|context|start))$/i.test(node.label.trim()) &&
+      !graph.edges.some((edge) => edge.target === node.id),
   );
   const otherNodes = graph.nodes.map((node) => {
     if (node.kind !== 'trigger' || node.id === reusable?.id) return node;
@@ -245,7 +253,7 @@ export function edgeNeedsDetour(
   const horizontal = direction === 'horizontal';
   const start = horizontal ? source.x + NODE_WIDTH : source.y + NODE_HEIGHT;
   const end = horizontal ? target.x : target.y;
-  if (end <= start) return false;
+  if (end <= start) return true;
   const startCross = horizontal ? source.y + NODE_HEIGHT / 2 : source.x + NODE_WIDTH / 2;
   const endCross = horizontal ? target.y + NODE_HEIGHT / 2 : target.x + NODE_WIDTH / 2;
   return graph.nodes.some((node) => {
@@ -279,6 +287,170 @@ export function detourPath(
   const laneX = Math.min(sourceX, targetX) - NODE_WIDTH / 2 - offset;
   const path = `M ${sourceX} ${sourceY} C ${sourceX} ${sourceY + 42}, ${laneX} ${sourceY + 42}, ${laneX} ${sourceY + 84} L ${laneX} ${targetY - 84} C ${laneX} ${targetY - 42}, ${targetX} ${targetY - 42}, ${targetX} ${targetY}`;
   return { path, labelX: laneX, labelY: (sourceY + targetY) / 2 };
+}
+
+function roundedPolyline(points: [number, number][], radius = 12) {
+  const visible = points.filter(
+    (point, index) =>
+      index === 0 || point[0] !== points[index - 1]![0] || point[1] !== points[index - 1]![1],
+  );
+  if (visible.length < 2) return '';
+  let path = `M ${visible[0]![0]} ${visible[0]![1]}`;
+  for (let index = 1; index < visible.length - 1; index++) {
+    const previous = visible[index - 1]!;
+    const corner = visible[index]!;
+    const next = visible[index + 1]!;
+    const incoming = Math.hypot(corner[0] - previous[0], corner[1] - previous[1]);
+    const outgoing = Math.hypot(next[0] - corner[0], next[1] - corner[1]);
+    const bend = Math.min(radius, incoming / 2, outgoing / 2);
+    const entry: [number, number] = [
+      corner[0] - ((corner[0] - previous[0]) / incoming) * bend,
+      corner[1] - ((corner[1] - previous[1]) / incoming) * bend,
+    ];
+    const exit: [number, number] = [
+      corner[0] + ((next[0] - corner[0]) / outgoing) * bend,
+      corner[1] + ((next[1] - corner[1]) / outgoing) * bend,
+    ];
+    path += ` L ${entry[0]} ${entry[1]} Q ${corner[0]} ${corner[1]} ${exit[0]} ${exit[1]}`;
+  }
+  const last = visible.at(-1)!;
+  return `${path} L ${last[0]} ${last[1]}`;
+}
+
+/** Rounded, directional routes keep every branch separate and readable. */
+export function factoryRoutePath(
+  sourceX: number,
+  sourceY: number,
+  targetX: number,
+  targetY: number,
+  plan: RoutePlan,
+) {
+  const horizontal = plan.direction === 'horizontal';
+  const stem = 24;
+  let points: [number, number][];
+  let labelX: number;
+  let labelY: number;
+  if (plan.kind === 'feedback') {
+    const corridor =
+      plan.corridor ??
+      (horizontal ? Math.min(sourceY, targetY) - 60 : Math.min(sourceX, targetX) - 60);
+    points = horizontal
+      ? [
+          [sourceX, sourceY],
+          [sourceX, corridor],
+          [targetX, corridor],
+          [targetX, targetY],
+        ]
+      : [
+          [sourceX, sourceY],
+          [corridor, sourceY],
+          [corridor, targetY],
+          [targetX, targetY],
+        ];
+    labelX = horizontal ? (sourceX + targetX) / 2 : corridor;
+    labelY = horizontal ? corridor : (sourceY + targetY) / 2;
+  } else if (plan.kind === 'detour') {
+    const corridor =
+      plan.corridor ??
+      (horizontal ? Math.min(sourceY, targetY) - 72 : Math.min(sourceX, targetX) - 72);
+    points = horizontal
+      ? [
+          [sourceX, sourceY],
+          [sourceX + stem, sourceY],
+          [sourceX + stem, corridor],
+          [targetX - stem, corridor],
+          [targetX - stem, targetY],
+          [targetX, targetY],
+        ]
+      : [
+          [sourceX, sourceY],
+          [sourceX, sourceY + stem],
+          [corridor, sourceY + stem],
+          [corridor, targetY - stem],
+          [targetX, targetY - stem],
+          [targetX, targetY],
+        ];
+    labelX = horizontal ? (sourceX + targetX) / 2 : corridor;
+    labelY = horizontal ? corridor : (sourceY + targetY) / 2;
+  } else {
+    const middle = horizontal ? (sourceX + targetX) / 2 : (sourceY + targetY) / 2;
+    points = horizontal
+      ? [
+          [sourceX, sourceY],
+          [middle, sourceY],
+          [middle, targetY],
+          [targetX, targetY],
+        ]
+      : [
+          [sourceX, sourceY],
+          [sourceX, middle],
+          [targetX, middle],
+          [targetX, targetY],
+        ];
+    labelX = horizontal ? middle : (sourceX + targetX) / 2;
+    labelY = horizontal ? (sourceY + targetY) / 2 : middle;
+  }
+  return { path: roundedPolyline(points), labelX, labelY };
+}
+
+/** Reserve distinct outer corridors for routes whose node spans overlap. */
+export function planFactoryRoutes(
+  graph: Graph,
+  direction: LayoutDirection,
+  stages = stageNumbers(graph),
+) {
+  const horizontal = direction === 'horizontal';
+  const plans = new Map<string, RoutePlan>();
+  const occupied: Record<RouteSide | 'feedback', number[]> = {
+    upper: [],
+    lower: [],
+    feedback: [],
+  };
+  let sameLineDetours = 0;
+  for (const edge of graph.edges) {
+    const source = graph.nodes.find((node) => node.id === edge.source);
+    const target = graph.nodes.find((node) => node.id === edge.target);
+    if (!source || !target) continue;
+    const feedback = edge.kind === 'feedback';
+    const detour = !feedback && edgeNeedsDetour(graph, edge, direction, stages);
+    if (!feedback && !detour) {
+      plans.set(edge.id, { direction, kind: 'direct' });
+      continue;
+    }
+    const sourceCross = horizontal ? source.y : source.x;
+    const targetCross = horizontal ? target.y : target.x;
+    const side: RouteSide | 'feedback' = feedback
+      ? 'feedback'
+      : targetCross > sourceCross + 24
+        ? 'lower'
+        : targetCross < sourceCross - 24
+          ? 'upper'
+          : sameLineDetours++ % 2 === 0
+            ? 'upper'
+            : 'lower';
+    const spanStart = Math.min(horizontal ? source.x : source.y, horizontal ? target.x : target.y);
+    const spanEnd =
+      Math.max(horizontal ? source.x : source.y, horizontal ? target.x : target.y) +
+      (horizontal ? NODE_WIDTH : NODE_HEIGHT);
+    const lanes = occupied[side];
+    let lane = lanes.findIndex((end) => end + 32 < spanStart);
+    if (lane < 0) lane = lanes.length;
+    lanes[lane] = spanEnd;
+    const across = graph.nodes.filter((node) => {
+      const start = horizontal ? node.x : node.y;
+      return start < spanEnd && start + (horizontal ? NODE_WIDTH : NODE_HEIGHT) > spanStart;
+    });
+    const crossMin = Math.min(...across.map((node) => (horizontal ? node.y : node.x)));
+    const crossMax = Math.max(
+      ...across.map((node) => (horizontal ? node.y + NODE_HEIGHT : node.x + NODE_WIDTH)),
+    );
+    const corridor =
+      side === 'lower'
+        ? crossMax + 44 + lane * 42
+        : crossMin - 44 - lane * 42 - (side === 'feedback' ? 38 : 0);
+    plans.set(edge.id, { direction, kind: feedback ? 'feedback' : 'detour', corridor });
+  }
+  return plans;
 }
 
 function pathExists(edges: GraphEdge[], start: string, end: string) {

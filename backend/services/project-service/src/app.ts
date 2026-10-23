@@ -206,6 +206,7 @@ export function createApp(repository: ProjectRepository, internalToken: string) 
   const app = express();
   app.disable('x-powered-by');
   app.use(helmet());
+  app.use('/v1/projects/:projectId/graph', express.json({ limit: '768kb' }));
   app.use(express.json({ limit: '32kb' }));
   app.use(
     pinoHttp({

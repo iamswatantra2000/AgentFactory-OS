@@ -34,6 +34,11 @@ export type WorkflowCanvasNode = Node<
     incoming: number;
     outgoing: number;
     forwardOutgoing: number;
+    incomingForwardIds: string[];
+    outgoingForwardIds: string[];
+    incomingFeedbackIds: string[];
+    outgoingFeedbackIds: string[];
+    portSignature: string;
     stage: number;
     touring: boolean;
     visited: boolean;
@@ -55,6 +60,11 @@ export const WorkflowNode = memo(function WorkflowNode({
     incoming,
     outgoing,
     forwardOutgoing,
+    incomingForwardIds,
+    outgoingForwardIds,
+    incomingFeedbackIds,
+    outgoingFeedbackIds,
+    portSignature,
     stage,
     touring,
     visited,
@@ -64,9 +74,11 @@ export const WorkflowNode = memo(function WorkflowNode({
   const updateNodeInternals = useUpdateNodeInternals();
   useEffect(() => {
     updateNodeInternals(id);
-  }, [direction, id, updateNodeInternals]);
+  }, [direction, id, portSignature, updateNodeInternals]);
   const Icon = roleIcons[(step.roleKey ?? step.kind) as keyof typeof roleIcons] ?? RobotIcon;
   const vertical = direction === 'vertical';
+  const spread = (index: number, total: number, start = 23, end = 72) =>
+    `${start + ((index + 1) * (end - start)) / (total + 1)}%`;
   return (
     <div
       className={[
@@ -85,19 +97,61 @@ export const WorkflowNode = memo(function WorkflowNode({
             type="target"
             position={vertical ? Position.Top : Position.Left}
             className={styles.inputHandle}
+            style={
+              vertical
+                ? { left: incomingForwardIds.length ? '88%' : '50%' }
+                : { top: incomingForwardIds.length ? '88%' : '50%' }
+            }
             isConnectable={isConnectable}
             title={'Incoming connections to ' + step.label}
             aria-label={'Connect into ' + step.label}
           />
+          {incomingForwardIds.map((edgeId, index) => (
+            <Handle
+              key={edgeId}
+              id={`in:${edgeId}`}
+              type="target"
+              position={vertical ? Position.Top : Position.Left}
+              className={`${styles.inputHandle} ${styles.routePort}`}
+              style={
+                vertical
+                  ? { left: spread(index, incomingForwardIds.length) }
+                  : { top: spread(index, incomingForwardIds.length) }
+              }
+              isConnectable={false}
+              aria-label={`Incoming route ${index + 1} to ${step.label}`}
+            />
+          ))}
           <Handle
             id="feedback-in"
             type="target"
             position={vertical ? Position.Left : Position.Top}
             className={styles.feedbackHandle}
+            style={
+              vertical
+                ? { top: incomingFeedbackIds.length ? '45%' : '50%' }
+                : { left: incomingFeedbackIds.length ? '45%' : '50%' }
+            }
             isConnectable={isConnectable}
             title={'Return to ' + step.label + ' for a bounded review conversation'}
             aria-label={'Review loop back to ' + step.label}
           />
+          {incomingFeedbackIds.map((edgeId, index) => (
+            <Handle
+              key={edgeId}
+              id={`feedback-in:${edgeId}`}
+              type="target"
+              position={vertical ? Position.Left : Position.Top}
+              className={`${styles.feedbackHandle} ${styles.routePort}`}
+              style={
+                vertical
+                  ? { top: spread(index, incomingFeedbackIds.length, 12, 36) }
+                  : { left: spread(index, incomingFeedbackIds.length, 12, 36) }
+              }
+              isConnectable={false}
+              aria-label={`Review return ${index + 1} to ${step.label}`}
+            />
+          ))}
         </>
       )}
       <div className={styles.nodeTop}>
@@ -148,10 +202,47 @@ export const WorkflowNode = memo(function WorkflowNode({
         type="source"
         position={vertical ? Position.Bottom : Position.Right}
         className={styles.outputHandle}
+        style={
+          vertical
+            ? { left: outgoingForwardIds.length ? '88%' : '50%' }
+            : { top: outgoingForwardIds.length ? '88%' : '50%' }
+        }
         isConnectable={isConnectable}
         title={'Drag to connect from ' + step.label}
         aria-label={'Connect from ' + step.label}
       />
+      {outgoingForwardIds.map((edgeId, index) => (
+        <Handle
+          key={edgeId}
+          id={`out:${edgeId}`}
+          type="source"
+          position={vertical ? Position.Bottom : Position.Right}
+          className={`${styles.outputHandle} ${styles.routePort}`}
+          style={
+            vertical
+              ? { left: spread(index, outgoingForwardIds.length) }
+              : { top: spread(index, outgoingForwardIds.length) }
+          }
+          isConnectable={false}
+          aria-label={`Outgoing route ${index + 1} from ${step.label}`}
+        />
+      ))}
+      {outgoingFeedbackIds.map((edgeId, index) => (
+        <Handle
+          key={edgeId}
+          id={`feedback-out:${edgeId}`}
+          type="source"
+          position={vertical ? Position.Left : Position.Top}
+          className={`${styles.feedbackHandle} ${styles.routePort}`}
+          style={
+            vertical
+              ? { top: spread(index, outgoingFeedbackIds.length, 64, 88) }
+              : { left: spread(index, outgoingFeedbackIds.length, 64, 88) }
+          }
+          isConnectable={false}
+          aria-label={`Review route ${index + 1} from ${step.label}`}
+        />
+      ))}
     </div>
   );
 });

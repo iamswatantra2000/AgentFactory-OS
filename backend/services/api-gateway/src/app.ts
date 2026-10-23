@@ -182,6 +182,7 @@ export async function createApp(config: Config) {
       },
     }),
   );
+  app.use('/api/v1/projects/:projectId/graph', express.json({ limit: '768kb' }));
   app.use('/api/v1/projects', express.json({ limit: '128kb' }));
   app.use('/api/v1', express.json({ limit: '16kb' }));
 
