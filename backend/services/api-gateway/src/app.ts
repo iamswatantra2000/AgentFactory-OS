@@ -122,12 +122,7 @@ async function projectActor(config: Config, request: Request) {
   return parsed.success ? { ...parsed.data.user, token } : null;
 }
 
-async function proxyProject(
-  config: Config,
-  request: Request,
-  response: ExpressResponse,
-  path: string,
-) {
+async function proxyProject(config: Config, request: Request, response: ExpressResponse, path: string) {
   response.setHeader('Cache-Control', 'no-store');
   const origin = request.header('origin');
   if (origin && !config.allowedOrigins.includes(origin))
@@ -202,6 +197,7 @@ export async function createApp(config: Config) {
       },
     }),
   );
+  app.use('/api/v1/projects/:projectId/graph', express.json({ limit: '768kb' }));
   app.use('/api/v1/projects', express.json({ limit: '128kb' }));
   app.use('/api/v1', express.json({ limit: '16kb' }));
 

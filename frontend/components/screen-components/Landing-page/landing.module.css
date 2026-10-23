@@ -34,8 +34,7 @@
   background: var(--af-surface);
 }
 .headerInner {
-  max-width: 1440px;
-  margin: auto;
+  width: 100%;
   padding: 0 48px;
   height: 88px;
   display: flex;
@@ -647,11 +646,6 @@
   border: 0;
   background: none;
   cursor: pointer;
-}
-@media (min-width: 1441px) {
-  .heroArt {
-    right: calc((100vw - 1440px) / 2 - 170px);
-  }
 }
 @media (max-width: 1199px) {
   .headerInner {

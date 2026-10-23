@@ -51,7 +51,6 @@ import {
 import {
   arrangeGraph,
   connectionError,
-  edgeNeedsDetour,
   EDGE_LIMIT,
   emptyGraph,
   ensureBusinessStart,
@@ -62,6 +61,7 @@ import {
   normalizeGraph,
   orderedNodes,
   outgoingForwardEdges,
+  planFactoryRoutes,
   moveOutgoingRoute,
   stageNumbers,
   workflowChecks,
@@ -170,6 +170,10 @@ export function VisualFactory({ project }: { project: Project }) {
   const readyCount = checks.filter((check) => check.ready).length;
   const productionOrder = useMemo(() => orderedNodes(graph), [graph]);
   const stages = useMemo(() => stageNumbers(graph), [graph]);
+  const routePlans = useMemo(
+    () => planFactoryRoutes(graph, direction, stages),
+    [graph, direction, stages],
+  );
   const touringNode = tourStep === null ? null : productionOrder[tourStep];
   const visited = useMemo(
     () => new Set(productionOrder.slice(0, (tourStep ?? -1) + 1).map((node) => node.id)),
@@ -190,68 +194,73 @@ export function VisualFactory({ project }: { project: Project }) {
   );
   const nodes = useMemo<WorkflowCanvasNode[]>(
     () =>
-      graph.nodes.map((step) => ({
-        id: step.id,
-        type: 'workflow',
-        position: { x: step.x, y: step.y },
-        selected: step.id === selectedId,
-        width: NODE_WIDTH,
-        height: NODE_HEIGHT,
-        ariaLabel: step.label + ', ' + kindLabels[step.kind] + '. Select to edit details.',
-        data: {
-          step,
-          direction,
-          incoming: graph.edges.filter((edge) => edge.target === step.id).length,
-          outgoing: graph.edges.filter((edge) => edge.source === step.id).length,
-          forwardOutgoing: outgoingForwardEdges(graph, step.id).length,
-          stage: stages.get(step.id) ?? 1,
-          touring: touringNode?.id === step.id,
-          visited: tourStep !== null && visited.has(step.id),
-          connecting: Boolean(connectingSource),
-          validTarget: Boolean(
-            connectingSource &&
-            (!connectionError(graph, connectingSource, step.id) ||
-              !connectionError(graph, connectingSource, step.id, undefined, 'feedback')),
-          ),
-        },
-      })),
+      graph.nodes.map((step) => {
+        const incomingForwardIds = graph.edges
+          .filter((edge) => edge.target === step.id && edge.kind !== 'feedback')
+          .map((edge) => edge.id);
+        const outgoingForwardIds = outgoingForwardEdges(graph, step.id).map((edge) => edge.id);
+        const incomingFeedbackIds = graph.edges
+          .filter((edge) => edge.target === step.id && edge.kind === 'feedback')
+          .map((edge) => edge.id);
+        const outgoingFeedbackIds = graph.edges
+          .filter((edge) => edge.source === step.id && edge.kind === 'feedback')
+          .map((edge) => edge.id);
+        return {
+          id: step.id,
+          type: 'workflow',
+          position: { x: step.x, y: step.y },
+          selected: step.id === selectedId,
+          width: NODE_WIDTH,
+          height: NODE_HEIGHT,
+          ariaLabel: step.label + ', ' + kindLabels[step.kind] + '. Select to edit details.',
+          data: {
+            step,
+            direction,
+            incoming: graph.edges.filter((edge) => edge.target === step.id).length,
+            outgoing: graph.edges.filter((edge) => edge.source === step.id).length,
+            forwardOutgoing: outgoingForwardEdges(graph, step.id).length,
+            incomingForwardIds,
+            outgoingForwardIds,
+            incomingFeedbackIds,
+            outgoingFeedbackIds,
+            portSignature: [
+              ...incomingForwardIds,
+              ...outgoingForwardIds,
+              ...incomingFeedbackIds,
+              ...outgoingFeedbackIds,
+            ].join('|'),
+            stage: stages.get(step.id) ?? 1,
+            touring: touringNode?.id === step.id,
+            visited: tourStep !== null && visited.has(step.id),
+            connecting: Boolean(connectingSource),
+            validTarget: Boolean(
+              connectingSource &&
+              (!connectionError(graph, connectingSource, step.id) ||
+                !connectionError(graph, connectingSource, step.id, undefined, 'feedback')),
+            ),
+          },
+        };
+      }),
     [graph, selectedId, direction, connectingSource, stages, tourStep, touringNode?.id, visited],
   );
   const edges = useMemo<Edge[]>(
     () =>
-      graph.edges.map((edge) => {
+      graph.edges.map((edge, index) => {
         const active = edge.id === selectedEdgeId;
         const related = !selectedId || edge.source === selectedId || edge.target === selectedId;
         const feedback = edge.kind === 'feedback';
-        const siblings = outgoingForwardEdges(graph, edge.source);
         const source = graph.nodes.find((node) => node.id === edge.source);
         const dispatch = source?.branchMode ?? 'sequential';
-        const detour = !feedback && edgeNeedsDetour(graph, edge, direction, stages);
-        const lane = siblings
-          .slice(
-            0,
-            siblings.findIndex((item) => item.id === edge.id),
-          )
-          .filter((item) => edgeNeedsDetour(graph, item, direction, stages)).length;
+        const plan = routePlans.get(edge.id) ?? { direction, kind: 'direct' as const };
         const color = active ? '#945a16' : feedback ? '#b77d37' : related ? '#2d7051' : '#b7c6bb';
         return {
           ...edge,
-          type: feedback ? 'smoothstep' : detour ? 'factoryRoute' : 'default',
-          data: detour ? { direction, lane } : undefined,
-          sourceHandle: 'out',
-          targetHandle: feedback ? 'feedback-in' : 'in',
-          label: feedback
-            ? '↩ ' +
-              (edge.label?.trim() || 'Review & revise') +
-              ' · max ' +
-              (edge.maxRounds ?? 2) +
-              ' rounds'
-            : siblings.length > 1
-              ? dispatch === 'parallel'
-                ? '∥'
-                : String(siblings.findIndex((item) => item.id === edge.id) + 1)
-              : undefined,
-          labelStyle: { fill: feedback ? '#724719' : '#1d573c', fontSize: 11, fontWeight: 700 },
+          type: 'factoryRoute',
+          data: plan,
+          sourceHandle: feedback ? `feedback-out:${edge.id}` : `out:${edge.id}`,
+          targetHandle: feedback ? `feedback-in:${edge.id}` : `in:${edge.id}`,
+          label: feedback ? `↩ ${index + 1}` : `${index + 1}${dispatch === 'parallel' ? ' ∥' : ''}`,
+          labelStyle: { fill: feedback ? '#724719' : '#1d573c', fontSize: 14, fontWeight: 700 },
           labelBgStyle: {
             fill: feedback ? '#fff6e7' : '#f8fff7',
             stroke: feedback ? '#d8ad73' : '#81ae8e',
@@ -259,21 +268,20 @@ export function VisualFactory({ project }: { project: Project }) {
           },
           labelBgPadding: [7, 5],
           labelBgBorderRadius: 5,
-          pathOptions: feedback ? { offset: 68, borderRadius: 24 } : undefined,
           selected: active,
           animated:
             !feedback && tourStep !== null && visited.has(edge.source) && visited.has(edge.target),
           interactionWidth: 28,
           style: {
             stroke: color,
-            strokeWidth: active ? 3.5 : detour ? 2.75 : 2,
+            strokeWidth: active ? 3.75 : plan.kind === 'detour' ? 3 : 2.5,
             strokeDasharray: feedback ? '7 5' : undefined,
           },
           markerEnd: { type: MarkerType.ArrowClosed, width: 18, height: 18, color },
           ariaLabel:
             (feedback
               ? 'Review loop from '
-              : detour
+              : plan.kind === 'detour'
                 ? 'Visible branch from '
                 : 'Connection from ') +
             (graph.nodes.find((node) => node.id === edge.source)?.label ?? '') +
@@ -281,7 +289,7 @@ export function VisualFactory({ project }: { project: Project }) {
             (graph.nodes.find((node) => node.id === edge.target)?.label ?? ''),
         };
       }),
-    [graph, selectedEdgeId, selectedId, tourStep, visited, direction, stages],
+    [graph, selectedEdgeId, selectedId, tourStep, visited, direction, routePlans],
   );
 
   useEffect(() => {
@@ -484,7 +492,7 @@ export function VisualFactory({ project }: { project: Project }) {
     replacingId?: string,
   ) {
     if (locked) return;
-    const kind = connection.targetHandle === 'feedback-in' ? 'feedback' : 'forward';
+    const kind = connection.targetHandle?.startsWith('feedback-in') ? 'feedback' : 'forward';
     const reason = connectionError(graph, connection.source, connection.target, replacingId, kind);
     if (reason) {
       setError(reason);
@@ -987,7 +995,9 @@ export function VisualFactory({ project }: { project: Project }) {
                         state.fromHandle?.type === 'source' ? state.fromNode.id : state.toNode.id;
                       const to =
                         state.fromHandle?.type === 'source' ? state.toNode.id : state.fromNode.id;
-                      const kind = state.toHandle?.id === 'feedback-in' ? 'feedback' : 'forward';
+                      const kind = state.toHandle?.id?.startsWith('feedback-in')
+                        ? 'feedback'
+                        : 'forward';
                       setError(connectionError(graph, from, to, undefined, kind) ?? '');
                     }
                   }}
@@ -1005,7 +1015,7 @@ export function VisualFactory({ project }: { project: Project }) {
                       connection.source,
                       connection.target,
                       reconnecting.current ?? undefined,
-                      connection.targetHandle === 'feedback-in' ? 'feedback' : 'forward',
+                      connection.targetHandle?.startsWith('feedback-in') ? 'feedback' : 'forward',
                     )
                   }
                   onMove={(_, view) => setZoom(view.zoom)}
@@ -1018,7 +1028,7 @@ export function VisualFactory({ project }: { project: Project }) {
                   connectOnClick
                   connectionRadius={40}
                   reconnectRadius={16}
-                  connectionLineType={ConnectionLineType.Bezier}
+                  connectionLineType={ConnectionLineType.SmoothStep}
                   connectionLineStyle={{
                     stroke: '#2d7051',
                     strokeWidth: 2.5,
@@ -1080,8 +1090,8 @@ export function VisualFactory({ project }: { project: Project }) {
             </div>
             <div className={styles.canvasFooter}>
               <span className={styles.canvasHelp}>
-                Drag Out → In to connect. Numbered routes are ordered; ∥ routes are planned
-                together. Amber paths return for review.
+                Drag Out → In to connect. Each numbered wire is a separate handoff; set branch order
+                in Details. ∥ means parallel, and amber means return for review.
               </span>
               <div className={styles.zoomControls}>
                 <button
@@ -1148,6 +1158,7 @@ export function VisualFactory({ project }: { project: Project }) {
                 <button
                   type="button"
                   className={styles.businessStartShortcut}
+                  disabled={loading || loadFailed}
                   onClick={() => {
                     const start = graph.nodes.find((node) => node.kind === 'trigger');
                     if (start) {
@@ -1262,7 +1273,7 @@ export function VisualFactory({ project }: { project: Project }) {
                         <FrameCornersIcon size={18} />
                       </button>
                     </div>
-                    <h2>Step details</h2>
+                    <h2>{selected.kind === 'trigger' ? 'Business brief' : 'Step details'}</h2>
                     <p className={styles.panelIntro}>Changes are included when you save draft.</p>
                     {selected.kind === 'trigger' ? (
                       <div className={styles.businessPromptPanel}>
@@ -1911,11 +1922,13 @@ export function VisualFactory({ project }: { project: Project }) {
                           )
                         }
                       >
-                        {graph.nodes.map((node) => (
-                          <option key={node.id} value={node.id}>
-                            {node.label}
-                          </option>
-                        ))}
+                        {graph.nodes
+                          .filter((node) => node.kind !== 'trigger')
+                          .map((node) => (
+                            <option key={node.id} value={node.id}>
+                              {node.label}
+                            </option>
+                          ))}
                       </select>
                     </label>
                     {selectedEdge.kind === 'feedback' && (

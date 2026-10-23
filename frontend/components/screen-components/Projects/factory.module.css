@@ -538,6 +538,12 @@
   border-color: #af7831;
   background: #fff0d7;
 }
+.node .routePort {
+  width: 12px;
+  height: 12px;
+  border-width: 2px;
+  pointer-events: none;
+}
 .canvasEmpty {
   position: absolute;
   top: 50%;

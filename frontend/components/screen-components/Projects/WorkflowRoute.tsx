@@ -1,11 +1,11 @@
 'use client';
 
 import { BaseEdge, type Edge, type EdgeProps } from '@xyflow/react';
-import { detourPath, type LayoutDirection } from './workflow-graph';
+import { factoryRoutePath, type RoutePlan } from './workflow-graph';
 
-export type FactoryRouteEdge = Edge<{ direction: LayoutDirection; lane: number }, 'factoryRoute'>;
+export type FactoryRouteEdge = Edge<RoutePlan, 'factoryRoute'>;
 
-/** Route a skipped-step handoff around cards rather than drawing through them. */
+/** Draw each handoff as a separate, rounded production route. */
 export function WorkflowRoute({
   sourceX,
   sourceY,
@@ -22,13 +22,15 @@ export function WorkflowRoute({
   labelBgBorderRadius,
   interactionWidth,
 }: EdgeProps<FactoryRouteEdge>) {
-  const geometry = detourPath(
+  const geometry = factoryRoutePath(
     sourceX,
     sourceY,
     targetX,
     targetY,
-    data?.direction ?? 'horizontal',
-    data?.lane ?? 0,
+    data ?? {
+      direction: 'horizontal',
+      kind: 'direct',
+    },
   );
   return (
     <BaseEdge
