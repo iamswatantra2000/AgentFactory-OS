@@ -11,8 +11,8 @@ import express, {
 import * as helmetModule from 'helmet';
 import { pinoHttp } from 'pino-http';
 import { z } from 'zod';
-import { createLogger } from '@agentfactory/observability';
-import type { loadConfig } from './config.js';
+import { loadConfig } from './config.js';
+import { createLogger } from './logger.js';
 
 type Config = ReturnType<typeof loadConfig>;
 
@@ -469,4 +469,11 @@ export async function createApp(config: Config) {
   });
 
   return app;
+}
+
+let vercelApp: ReturnType<typeof createApp> | undefined;
+
+export default async function handler(request: Request, response: ExpressResponse) {
+  const app = await (vercelApp ??= createApp(loadConfig()));
+  app(request, response);
 }
