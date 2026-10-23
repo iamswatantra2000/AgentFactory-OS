@@ -2,9 +2,14 @@ import { createHash, randomUUID } from 'node:crypto';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@as-integrations/express5';
 import cors from 'cors';
-import express, { type NextFunction, type Request, type Response } from 'express';
-import helmet from 'helmet';
-import pinoHttp from 'pino-http';
+import express, {
+  type NextFunction,
+  type Request,
+  type RequestHandler,
+  type Response as ExpressResponse,
+} from 'express';
+import * as helmetModule from 'helmet';
+import { pinoHttp } from 'pino-http';
 import { z } from 'zod';
 import { createLogger } from '@agentfactory/observability';
 import type { loadConfig } from './config.js';
@@ -12,13 +17,23 @@ import type { loadConfig } from './config.js';
 type Config = ReturnType<typeof loadConfig>;
 
 type ServiceStatus = { name: string; status: string; timestamp: string };
+type UpstreamResponse = {
+  readonly ok: boolean;
+  readonly status: number;
+  json(): Promise<unknown>;
+};
 const sessionCookie = 'af_session';
 const sessionMaxAgeMs = 7 * 24 * 60 * 60 * 1000;
 const authWindowMs = 15 * 60 * 1000;
+const helmet = helmetModule.default as unknown as () => RequestHandler;
+
+async function upstreamFetch(...args: Parameters<typeof fetch>): Promise<UpstreamResponse> {
+  return (await fetch(...args)) as unknown as UpstreamResponse;
+}
 
 function authLimiter() {
   const attempts = new Map<string, { count: number; resetAt: number }>();
-  return (request: Request, response: Response, next: NextFunction) => {
+  return (request: Request, response: ExpressResponse, next: NextFunction) => {
     const limits: Record<string, number> = {
       '/login': 10,
       '/signup': 5,
@@ -60,7 +75,7 @@ function browserSession(request: Request) {
   return token && /^[0-9a-f]{64}$/.test(token) ? token : null;
 }
 
-function identityProblem(response: Response, status: number, title: string) {
+function identityProblem(response: ExpressResponse, status: number, title: string) {
   return response
     .status(status)
     .type('application/problem+json')
@@ -72,7 +87,7 @@ async function identityRequest(
   path: string,
   options: { method?: 'GET' | 'POST'; body?: unknown; token?: string } = {},
 ) {
-  return fetch(`${config.IDENTITY_SERVICE_URL}${path}`, {
+  return upstreamFetch(`${config.IDENTITY_SERVICE_URL}${path}`, {
     method: options.method ?? 'GET',
     headers: {
       ...(options.body ? { 'content-type': 'application/json' } : {}),
@@ -85,7 +100,7 @@ async function identityRequest(
 }
 
 async function readProjectStatus(config: Config, correlationId: string): Promise<ServiceStatus> {
-  const response = await fetch(`${config.PROJECT_SERVICE_URL}/health/ready`, {
+  const response = await upstreamFetch(`${config.PROJECT_SERVICE_URL}/health/ready`, {
     headers: { 'x-correlation-id': correlationId },
     signal: AbortSignal.timeout(2_000),
   });
@@ -107,7 +122,7 @@ async function projectActor(config: Config, request: Request) {
   return parsed.success ? { ...parsed.data.user, token } : null;
 }
 
-async function proxyProject(config: Config, request: Request, response: Response, path: string) {
+async function proxyProject(config: Config, request: Request, response: ExpressResponse, path: string) {
   response.setHeader('Cache-Control', 'no-store');
   const origin = request.header('origin');
   if (origin && !config.allowedOrigins.includes(origin))
@@ -143,7 +158,7 @@ async function proxyProject(config: Config, request: Request, response: Response
           return identityProblem(response, 400, 'Select members from this workspace');
       }
     }
-    const upstream = await fetch(`${config.PROJECT_SERVICE_URL}${path}`, {
+    const upstream = await upstreamFetch(`${config.PROJECT_SERVICE_URL}${path}`, {
       method: request.method,
       headers: {
         'x-af-internal-token': config.PROJECT_SERVICE_INTERNAL_TOKEN,
@@ -443,7 +458,7 @@ export async function createApp(config: Config) {
     }),
   );
 
-  app.use((error: unknown, request: Request, response: Response, _next: NextFunction) => {
+  app.use((error: unknown, request: Request, response: ExpressResponse, _next: NextFunction) => {
     request.log.error({ err: error }, 'Unhandled request error');
     response.status(500).type('application/problem+json').json({
       type: 'https://agentfactory.local/problems/internal-error',
